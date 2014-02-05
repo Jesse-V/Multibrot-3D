@@ -1,0 +1,49 @@
+
+/******************************************************************************\
+                     This file is part of Folding Atomata,
+          a program that displays 3D views of Folding@home proteins.
+
+                      Copyright (c) 2013, Jesse Victors
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see http://www.gnu.org/licenses/
+
+                For information regarding this software email:
+                                Jesse Victors
+                         jvictors@jessevictors.com
+\******************************************************************************/
+
+#ifndef TRIANGLE_STRUCT
+#define TRIANGLE_STRUCT
+
+/**
+    A Triangle is defined by three points: a, b, and c.
+    Here is a Triangle does not represent these points as locations
+    in 3D or 4D space, but rather as references to these points.
+    For example, a Triangle could contain {17, 12, 39}, which would be
+    indices corresponding to the 17th, 12th, and 39th point, respectively.
+**/
+
+#include <GL/glut.h>
+#include "glm/glm.hpp"
+
+struct Triangle
+{
+    Triangle(GLuint aa = 0, GLuint bb = 0, GLuint cc = 0)
+        : a(aa), b(bb), c(cc)
+    {}
+
+    GLuint a, b, c;
+};
+
+#endif
