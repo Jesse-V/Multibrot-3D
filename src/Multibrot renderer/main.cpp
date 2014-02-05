@@ -10,7 +10,7 @@
 
 const unsigned int CHUNK_SIZE = 32; //seems to be the fastest factor
 const unsigned int IMAGE_SIZE = 1024; //size of the resulting image, N * N
-const unsigned int MAX_DEPTH = 1024; //max iterations to follow the point
+const unsigned int MAX_DEPTH = 512; //max iterations to follow the point
 const float D = 32;
 
 
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     }
 
     std::stringstream filename;
-    filename << "matrix" << D << ".ppm" << std::endl;
+    filename << "multibrot,d=" << D << ".dat";
     writeMatrix(matrix, filename.str());
 
     /*
@@ -141,15 +141,25 @@ void writeMatrix(Matrix2D& matrix, std::string filename)
 {
     std::ofstream fout;
     fout.open(filename, std::ofstream::out);
-    fout << "P2 " << IMAGE_SIZE << " " << IMAGE_SIZE << " 255" << std::endl;
 
     for (const auto &row : matrix)
     {
-        for (const auto &cell : row)
+        bool state = false;
+        int count = 0;
+
+        for (int index = 0; index < row.size(); index++)
         {
-            int value = cell ? 0 : 100;
-            fout << value << " ";
+            if (row[index] == state)
+                count++;
+            else
+            {
+                fout << count << " ";
+                count = 0;
+                state = !state;
+            }
         }
+
+        fout << count << " ";
         fout << std::endl;
     }
 
