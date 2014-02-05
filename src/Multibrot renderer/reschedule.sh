@@ -9,8 +9,8 @@ if (./compile.sh) then
     exists=0
     while [ "$exists" -ne 1 ]
     do
-        exists=$([ -r buddhabrot.o* ] && echo 1 || echo 0)
+        exists=$([ -r multibrot.o* ] && echo 1 || echo 0)
         sleep 1
     done
-    watch -n 0.5 "cat buddhabrot.o* | tail -20"
+    watch -n 0.5 "cat multibrot.o* | tail -20"
 fi

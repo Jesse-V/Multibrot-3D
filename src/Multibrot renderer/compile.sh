@@ -1,6 +1,7 @@
 #!/bin/sh
-use OpenMPI-GCC-4.8
-if (mpic++ --std=c++11 main.cpp -O3 -o buddhabrot) then
+
+cmake .
+if (make) then
     echo "Compilation success."
     exit 0
 else
