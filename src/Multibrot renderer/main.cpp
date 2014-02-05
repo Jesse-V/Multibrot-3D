@@ -1,7 +1,6 @@
 
 #include "main.hpp"
 #include "Chunk.struct"
-//#include <mpi.h>
 #include <queue>
 #include <complex>
 #include <fstream>
@@ -10,52 +9,43 @@
 
 const unsigned int CHUNK_SIZE = 32; //seems to be the fastest factor
 const unsigned int IMAGE_SIZE = 1024; //size of the resulting image, N * N
-const unsigned int MAX_DEPTH = 512; //max iterations to follow the point
-const float D = 32;
+const unsigned int MAX_DEPTH = 1024; //max iterations to follow the point
+const float MAX_HEIGHT = 1024;
 
 
 int main(int argc, char** argv)
 {
-    /*int processors, rank;
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &processors);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);*/
-
-    std::queue<Chunk> chunks;
-    for (unsigned int x = 0; x < IMAGE_SIZE; x += CHUNK_SIZE)
-        for (unsigned int y = 0; y < IMAGE_SIZE; y += CHUNK_SIZE)
-            chunks.push(Chunk(x, y, x + CHUNK_SIZE, y + CHUNK_SIZE));
-
-    Matrix2D matrix;
-    initializeMatrix(matrix);
-
-    while (!chunks.empty())
+    for (int height = 0; height < MAX_HEIGHT; height++)
     {
-        //std::cout << chunks.size() << std::endl;
-        render(chunks.front(), matrix);
-        chunks.pop();
+        float d = (height / (float)MAX_HEIGHT) * 32 + 1;
+
+        std::cout << "Processing " << height << " / " << MAX_HEIGHT << " (" << d << ") ... ";
+
+        std::queue<Chunk> chunks;
+        for (unsigned int x = 0; x < IMAGE_SIZE; x += CHUNK_SIZE)
+            for (unsigned int y = 0; y < IMAGE_SIZE; y += CHUNK_SIZE)
+                chunks.push(Chunk(x, y, x + CHUNK_SIZE, y + CHUNK_SIZE));
+
+        Matrix2D matrix;
+        initializeMatrix(matrix);
+
+        while (!chunks.empty())
+        {
+            //std::cout << chunks.size() << std::endl;
+            render(chunks.front(), matrix, d);
+            chunks.pop();
+        }
+
+        std::cout << "done" << std::endl;
+
+        std::stringstream filename;
+        filename << "multibrot,d=" << d << ".dat";
+        writeMatrix(matrix, filename.str());
     }
 
-    std::stringstream filename;
-    filename << "multibrot,d=" << D << ".dat";
-    writeMatrix(matrix, filename.str());
+    std::cout << "Program complete." << std::endl;
 
-    /*
-        divide image into chunks. Add all chunks to a queue.
-        Chunk object
-            minimum XY
-            maximum XY
-        For each chunk, check boundaries.
-            If all black, then chunk is black
-            else complete rest of the chunk manually
-        Print image
-    */
-
-    //std::cout << "Program complete for rank " << rank << std::endl;
-
-    //MPI_Finalize();
     return EXIT_SUCCESS;
-    //return EXIT_FAILURE;
 }
 
 
@@ -68,9 +58,14 @@ void initializeMatrix(Matrix2D& matrix)
 
 
 
-void render(Chunk chunk, Matrix2D& matrix)
+/*
+    For each chunk, check boundaries.
+        If all black, then chunk is black
+        else complete rest of the chunk manually
+*/
+void render(Chunk chunk, Matrix2D& matrix, float d)
 {
-    if (bordersAreInside(chunk))
+    if (bordersAreInside(chunk, d))
     {
         for (unsigned int x = 0; x < CHUNK_SIZE; x++)
             for (unsigned int y = 0; y < CHUNK_SIZE; y++)
@@ -84,31 +79,31 @@ void render(Chunk chunk, Matrix2D& matrix)
         {
             float fx = toFractalSpace(chunk.minX_ + x);
             float fy = toFractalSpace(chunk.minY_ + y);
-            matrix[chunk.minX_ + x][chunk.minY_ + y] = isInsideFractal(fx, fy);
+            matrix[chunk.minX_ + x][chunk.minY_ + y] = isInsideFractal(fx, fy, d);
         }
     }
 }
 
 
 
-bool bordersAreInside(Chunk chunk)
+bool bordersAreInside(Chunk chunk, float d)
 {
     bool black = true;
 
     for (unsigned int j = 0; black && j < CHUNK_SIZE; j++)
-        if (!isInsideFractal(toFractalSpace(chunk.minX_), toFractalSpace(chunk.minY_ + j)))
+        if (!isInsideFractal(toFractalSpace(chunk.minX_), toFractalSpace(chunk.minY_ + j), d))
             black = false;
 
     for (unsigned int j = 0; black && j < CHUNK_SIZE; j++)
-        if (!isInsideFractal(toFractalSpace(chunk.maxX_), toFractalSpace(chunk.minY_ + j)))
+        if (!isInsideFractal(toFractalSpace(chunk.maxX_), toFractalSpace(chunk.minY_ + j), d))
             black = false;
 
     for (unsigned int j = 0; black && j < CHUNK_SIZE; j++)
-        if (!isInsideFractal(toFractalSpace(chunk.minX_ + j), toFractalSpace(chunk.minY_)))
+        if (!isInsideFractal(toFractalSpace(chunk.minX_ + j), toFractalSpace(chunk.minY_), d))
             black = false;
 
     for (unsigned int j = 0; black && j < CHUNK_SIZE; j++)
-        if (!isInsideFractal(toFractalSpace(chunk.minX_ + j), toFractalSpace(chunk.maxY_)))
+        if (!isInsideFractal(toFractalSpace(chunk.minX_ + j), toFractalSpace(chunk.maxY_), d))
             black = false;
 
     return black;
@@ -123,14 +118,14 @@ float toFractalSpace(unsigned int pixel)
 
 
 
-bool isInsideFractal(float x, float y)
+bool isInsideFractal(float x, float y, float d)
 {
     std::complex<float> c(x, y);
     std::complex<float> z(0, 0);
 
     unsigned int i;
     for (i = 0; norm(z) < 4 && i < MAX_DEPTH; i++)
-        z = pow(z, D) + c;
+        z = pow(z, d) + c;
 
     return i == MAX_DEPTH;
 }
