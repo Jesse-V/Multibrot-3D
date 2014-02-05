@@ -1,0 +1,13 @@
+#ifndef CHUNK_STRUCT
+#define CHUNK_STRUCT
+
+struct Chunk
+{
+    Chunk(unsigned int minX, unsigned int minY, unsigned int maxX, unsigned int maxY)
+        : minX_(minX), minY_(minY), maxX_(maxX), maxY_(maxY)
+    {}
+
+    unsigned int minX_, minY_, maxX_, maxY_;
+};
+
+#endif
