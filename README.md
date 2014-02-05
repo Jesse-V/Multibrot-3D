@@ -7,7 +7,7 @@ By Wikipedia, a Multibrot set is the set of values in the complex plane whose ab
 
 z := z^d + c
 
-where d >= 2 but can also take on a fractional value.
+where **z** is a complex point in the plane and **d** >= 2 but can also take on a fractional value.
 
 Traditionally, d = 2 which creates the famous Mandelbrot fractal. The Multibrot set is thus an extension and generalization of the Mandelbrot. 
 
