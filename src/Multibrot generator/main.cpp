@@ -15,7 +15,7 @@ const float MAX_HEIGHT = 1024;
 
 int main(int argc, char** argv)
 {
-    for (int height = 0; height < MAX_HEIGHT; height++)
+    for (int height = 434; height < MAX_HEIGHT; height++)
     {
         float d = (height / (float)MAX_HEIGHT) * 32 + 1;
 

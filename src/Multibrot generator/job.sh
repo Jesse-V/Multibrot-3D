@@ -2,9 +2,9 @@
 # The #PBS directives are the equivalent of passing the same argument on
 # the qsub command line.
 
-#PBS -N buddhabrot
+#PBS -N multibrot
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=02:05:00
+#PBS -l walltime=03:05:00
 #PBS -M jvictors@jessevictors.com
 
 #PBS -j oe
