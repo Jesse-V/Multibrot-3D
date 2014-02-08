@@ -7,7 +7,6 @@
 
 
 const std::size_t SIZE = 1024;
-const std::size_t MAX_BOX_SIZE = 512;
 
 
 int main(int argc, char** argv)
@@ -192,12 +191,15 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
             {
                 for (int x = bounds.first.first; x <= bounds.second.first; x++)
                     for (int y = bounds.first.second; y <= bounds.second.second; y++)
-                            fout << "1 " << x << " " << y << std::endl;
+                            fout << x << " " << y << std::endl;
+
+                //TODO: it'd be really great if GL_LINES could be used efficiently
             }
             else
             {
-                fout << "4 " << bounds.first.first <<
-                    " " << bounds.first.second << " " << bounds.second.first <<
+                fout << bounds.first.first <<
+                    " " << bounds.first.second <<
+                    " " << bounds.second.first <<
                     " " << bounds.second.second << std::endl;
             }
 
