@@ -147,7 +147,7 @@ bool compress(Matrix2D& matrix, std::size_t lookingFor)
     {
         for (std::size_t y = 0; y <= SIZE - newSize; y += newSize)
         {
-            if (matrix[x][y] == lookingFor)
+            if (matrix[x][y] == (short)lookingFor)
             {
                 if (lookingFor == matrix[x + lookingFor][y] &&
                     lookingFor == matrix[x + lookingFor][y + lookingFor] &&
@@ -171,20 +171,42 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
 {
     std::ofstream fout;
     fout.open(filename, std::ofstream::out);
-    short boxSize = 16;
 
-    Point2D startPoint;
-    while (true) //eliminate all boxes
+    short boxSize = 1;
+    bool found;
+    do
     {
-        startPoint = getPointOf(matrix, boxSize);
-        if (startPoint.first < 0 || startPoint.second < 0)
-            break; //box not found
+        found = false;
+        std::cout << boxSize << " ";
+        std::cout.flush();
 
-        Bounds2D bounds = eliminateBoxOf(matrix, getPointOf(matrix, boxSize));
-        fout << (boxSize > 0 ? 4 : 1) << " " << bounds.first.first << " " <<
-            bounds.first.second << " " << bounds.second.first << " " <<
-            bounds.second.second << std::endl;
-    }
+        Point2D startPoint;
+        while (true) //eliminate all boxes
+        {
+            startPoint = getPointOf(matrix, boxSize);
+            if (startPoint.first < 0 || startPoint.second < 0)
+                break; //box not found
+
+            Bounds2D bounds = eliminateBoxOf(matrix, getPointOf(matrix, boxSize));
+            if (boxSize == 1) //dealing with points
+            {
+                for (int x = bounds.first.first; x <= bounds.second.first; x++)
+                    for (int y = bounds.first.second; y <= bounds.second.second; y++)
+                            fout << "1 " << x << " " << y << std::endl;
+            }
+            else
+            {
+                fout << "4 " << bounds.first.first <<
+                    " " << bounds.first.second << " " << bounds.second.first <<
+                    " " << bounds.second.second << std::endl;
+            }
+
+            found = true;
+        }
+
+        boxSize *= 2;
+
+    } while (found);
 
     fout.close();
 }
@@ -205,8 +227,8 @@ Point2D getPointOf(Matrix2D& matrix, short boxSize)
 
 Bounds2D eliminateBoxOf(Matrix2D& matrix, Point2D point)
 {
-    short targetBoxSize = matrix[point.first][point.second];
-    matrix[point.first][point.second] = -1;
+    short targetBoxSize = matrix[(std::size_t)point.first][(std::size_t)point.second];
+    matrix[(std::size_t)point.first][(std::size_t)point.second] = -1;
 
     bool expanded;
     do
@@ -248,19 +270,24 @@ Bounds2D eliminateBoxOf(Matrix2D& matrix, Point2D point)
 
     } while (expanded);
 
-    Point2D min = point, max = point;
-    for (std::size_t x = 0; x < SIZE; x++)
+    Point2D min = std::make_pair(SIZE, SIZE), max = std::make_pair(-1, -1);
+    for (int x = 0; x < (int)SIZE; x++)
     {
-        for (std::size_t y = 0; y < SIZE; y++)
+        for (int y = 0; y < (int)SIZE; y++)
         {
-            if (matrix[x][y] < 0)
+            if (matrix[(std::size_t)x][(std::size_t)y] < 0) //if marked
             {
-                matrix[x][y] = 0;
+                matrix[(std::size_t)x][(std::size_t)y] = 0; //eliminate
 
-                if (min.first < x || min.second < y)
-                    min = std::make_pair(x, y);
-                if (max.first > x || max.second > y)
-                    max = std::make_pair(x, y);
+                if (x < min.first)
+                    min.first = (int)x;
+                if (y < min.second)
+                    min.second = (int)y;
+
+                if (x > max.first)
+                    max.first = (int)x;
+                if (y > max.second)
+                    max.second = (int)y;
             }
         }
     }
