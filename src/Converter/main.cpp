@@ -6,7 +6,7 @@
 #include <iostream>
 
 const std::size_t SIZE = 1024;
-const std::size_t MAX_BOX_SIZE = 256;
+const std::size_t MAX_BOX_SIZE = 512;
 
 int main(int argc, char** argv)
 {
@@ -17,27 +17,29 @@ int main(int argc, char** argv)
     std::cout << "done." << std::endl;
 
     std::cout << "Compressing. Looking for boxes of size ";
-    short max = 0;
-    for (std::size_t lookFor = 1; lookFor < MAX_BOX_SIZE; lookFor *= 2)
+    std::size_t max = 0;
+    for (std::size_t lookFor = 1; lookFor <= MAX_BOX_SIZE; lookFor *= 2)
     {
         std::cout << lookFor << " ";
-        auto val = compress(matrix, lookFor);
-        if (val > max)
-            max = val;
+        if (compress(matrix, lookFor))
+        {
+            std::cout << "(found) ";
+            max = lookFor * 2;
+        }
     }
-    std::cout << " done." << std::endl;
+    std::cout << "done." << std::endl;
 
-    //for (std::size_t x = 0; x <= SIZE - 32; x += 32)
-    //    for (std::size_t y = 0; y < SIZE; y++)
-    //        matrix[x][y] = 0;
+    for (std::size_t x = 0; x <= SIZE - 128; x += 128)
+        for (std::size_t y = 0; y < SIZE; y++)
+            matrix[x][y] = 0;
 
     std::cout << "Writing post image... ";
-    writeMatrix(matrix, std::string("image_post.ppm"), max);
+    writeMatrix(matrix, std::string("image_post.ppm"), (short)max);
     std::cout << "done." << std::endl;
 
-    std::cout << "Writing geometry... ";
-    writeGeometry(matrix, std::string("geometry.dat"), max);
-    std::cout << "done." << std::endl;
+    //std::cout << "Writing geometry... ";
+    //writeGeometry(matrix, std::string("geometry.dat"), max);
+    //std::cout << "done." << std::endl;
 
     std::cout << "Program complete." << std::endl;
 
@@ -81,9 +83,9 @@ Matrix2D readMatrix(std::string filename)
 
 
 
-short compress(Matrix2D& matrix, std::size_t lookingFor)
+bool compress(Matrix2D& matrix, std::size_t lookingFor)
 {
-    size_t newSize = lookingFor * 2;
+    auto newSize = lookingFor * 2;
     bool found = false;
 
     for (std::size_t x = 0; x <= SIZE - newSize; x += newSize)
@@ -98,14 +100,14 @@ short compress(Matrix2D& matrix, std::size_t lookingFor)
                 )
                     for (std::size_t j = 0; j < newSize; j++)
                         for (std::size_t k = 0; k < newSize; k++)
-                            matrix[x + j][y + k] = newSize;
+                            matrix[x + j][y + k] = (short)newSize;
 
                 found = true;
             }
         }
     }
 
-    return found ? lookingFor : 0;
+    return found;
 }
 
 
@@ -123,6 +125,8 @@ void writeMatrix(Matrix2D& matrix, std::string filename, short max)
             int gray = (int)(cell / (float)max * 255);
             if (cell == 0)
                 fout << "0 0 255 ";
+            else if (cell == 1)
+                fout << "0 255 0 ";
             else
                 fout << gray << " " << gray << " " << gray << " ";
         }
