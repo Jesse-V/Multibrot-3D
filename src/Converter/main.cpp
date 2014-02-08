@@ -13,38 +13,39 @@ int main(int argc, char** argv)
     Matrix2D matrix = readMatrix(std::string("multibrot,d=2.dat"));
 
     std::cout << "Writing pre image... ";
-    writeMatrix(matrix, std::string("image_pre.ppm"), 1);
+    writeMatrix(matrix, std::string("image_phase1.ppm"), 1);
+    std::cout << "done." << std::endl;
+
+    std::cout << "Remove islands... ";
+    removeIslands(matrix, SIZE / 2, SIZE / 2);
+    std::cout << "done." << std::endl;
+
+    std::cout << "Writing island-less image... ";
+    writeMatrix(matrix, std::string("image_phase2.ppm"), 2);
     std::cout << "done." << std::endl;
 
     std::cout << "Compressing. Looking for boxes of size ";
-    std::size_t max = 0;
-    for (std::size_t lookFor = 1; lookFor <= MAX_BOX_SIZE; lookFor *= 2)
+    std::size_t boxSize = 1;
+    while (compress(matrix, boxSize))
     {
-        std::cout << lookFor << " ";
-        if (compress(matrix, lookFor))
-        {
-            std::cout << "(found) ";
-            max = lookFor * 2;
-        }
+        std::cout << boxSize << " ";
+        boxSize *= 2;
     }
     std::cout << "done." << std::endl;
 
-    for (std::size_t x = 0; x < SIZE; x += 128)
-        for (std::size_t y = 0; y < SIZE; y++)
-            matrix[x][y] = 0;
-
-    std::cout << "Writing post image... ";
-    writeMatrix(matrix, std::string("image_post.ppm"), (short)max);
+    std::cout << "Writing compressed image... ";
+    writeMatrix(matrix, std::string("image_phase3.ppm"), (short)boxSize);
     std::cout << "done." << std::endl;
 
     std::cout << "Writing geometry... ";
-    writeGeometry(matrix, std::string("geometry.dat"), max);
+    writeGeometry(matrix, std::string("geometry.dat"));
     std::cout << "done." << std::endl;
 
     std::cout << "Program complete." << std::endl;
 
     return EXIT_SUCCESS;
 }
+
 
 
 Matrix2D readMatrix(std::string filename)
@@ -83,6 +84,57 @@ Matrix2D readMatrix(std::string filename)
 
 
 
+void removeIslands(Matrix2D& matrix, std::size_t startX, std::size_t startY)
+{
+    matrix[startX][startY] = -1;
+
+    bool expanded;
+    do
+    {
+        expanded = false;
+
+        for (std::size_t x = 0; x < SIZE; x++)
+        {
+            for (std::size_t y = 0; y < SIZE; y++)
+            {
+                if (matrix[x][y] < 0) //if already marked
+                {
+                    if (matrix[x][y - 1] > 0) //if inside set
+                    {
+                        matrix[x][y - 1] = -1;
+                        expanded = true;
+                    }
+
+                    if (matrix[x][y + 1] > 0) //if inside set
+                    {
+                        matrix[x][y + 1] = -1;
+                        expanded = true;
+                    }
+
+                    if (matrix[x - 1][y] > 0) //if inside set
+                    {
+                        matrix[x - 1][y] = -1;
+                        expanded = true;
+                    }
+
+                    if (matrix[x + 1][y] > 0) //if inside set
+                    {
+                        matrix[x + 1][y] = -1;
+                        expanded = true;
+                    }
+                }
+            }
+        }
+
+    } while (expanded);
+
+    for (std::size_t x = 0; x < SIZE; x++)
+        for (std::size_t y = 0; y < SIZE; y++)
+            matrix[x][y] = matrix[x][y] < 0 ? 1 : 0; //all marked are good, otherwise remove
+}
+
+
+
 bool compress(Matrix2D& matrix, std::size_t lookingFor)
 {
     auto newSize = lookingFor * 2;
@@ -112,6 +164,13 @@ bool compress(Matrix2D& matrix, std::size_t lookingFor)
 
 
 
+void writeGeometry(Matrix2D& matrix, std::string filename)
+{
+
+}
+
+
+
 void writeMatrix(Matrix2D& matrix, std::string filename, short max)
 {
     std::ofstream fout;
@@ -134,11 +193,4 @@ void writeMatrix(Matrix2D& matrix, std::string filename, short max)
         fout << std::endl;
     }
     fout.close();
-}
-
-
-
-void writeGeometry(Matrix2D& matrix, std::string filename)
-{
-
 }
