@@ -5,8 +5,10 @@
 #include <iterator>
 #include <iostream>
 
+
 const std::size_t SIZE = 1024;
 const std::size_t MAX_BOX_SIZE = 512;
+
 
 int main(int argc, char** argv)
 {
@@ -39,6 +41,7 @@ int main(int argc, char** argv)
 
     std::cout << "Writing geometry... ";
     writeGeometry(matrix, std::string("geometry.dat"));
+    writeMatrix(matrix, std::string("image_phase4.ppm"), (short)boxSize);
     std::cout << "done." << std::endl;
 
     std::cout << "Program complete." << std::endl;
@@ -166,7 +169,103 @@ bool compress(Matrix2D& matrix, std::size_t lookingFor)
 
 void writeGeometry(Matrix2D& matrix, std::string filename)
 {
+    std::ofstream fout;
+    fout.open(filename, std::ofstream::out);
+    short boxSize = 16;
 
+    Point2D startPoint;
+    while (true) //eliminate all boxes
+    {
+        startPoint = getPointOf(matrix, boxSize);
+        if (startPoint.first < 0 || startPoint.second < 0)
+            break; //box not found
+
+        Bounds2D bounds = eliminateBoxOf(matrix, getPointOf(matrix, boxSize));
+        fout << (boxSize > 0 ? 4 : 1) << " " << bounds.first.first << " " <<
+            bounds.first.second << " " << bounds.second.first << " " <<
+            bounds.second.second << std::endl;
+    }
+
+    fout.close();
+}
+
+
+
+Point2D getPointOf(Matrix2D& matrix, short boxSize)
+{
+    for (std::size_t x = 0; x < SIZE; x++)
+        for (std::size_t y = 0; y < SIZE; y++)
+            if (matrix[x][y] == boxSize)
+                return std::make_pair((int)x, (int)y);
+
+    return std::make_pair(-1, -1);
+}
+
+
+
+Bounds2D eliminateBoxOf(Matrix2D& matrix, Point2D point)
+{
+    short targetBoxSize = matrix[point.first][point.second];
+    matrix[point.first][point.second] = -1;
+
+    bool expanded;
+    do
+    {
+        expanded = false;
+
+        for (std::size_t x = 0; x < SIZE; x++)
+        {
+            for (std::size_t y = 0; y < SIZE; y++)
+            {
+                if (matrix[x][y] < 0) //if already marked
+                {
+                    if (matrix[x][y - 1] == targetBoxSize)
+                    {
+                        matrix[x][y - 1] = -1;
+                        expanded = true;
+                    }
+
+                    if (matrix[x][y + 1] == targetBoxSize)
+                    {
+                        matrix[x][y + 1] = -1;
+                        expanded = true;
+                    }
+
+                    if (matrix[x - 1][y] == targetBoxSize)
+                    {
+                        matrix[x - 1][y] = -1;
+                        expanded = true;
+                    }
+
+                    if (matrix[x + 1][y] == targetBoxSize)
+                    {
+                        matrix[x + 1][y] = -1;
+                        expanded = true;
+                    }
+                }
+            }
+        }
+
+    } while (expanded);
+
+    Point2D min = point, max = point;
+    for (std::size_t x = 0; x < SIZE; x++)
+    {
+        for (std::size_t y = 0; y < SIZE; y++)
+        {
+            if (matrix[x][y] < 0)
+            {
+                matrix[x][y] = 0;
+
+                if (min.first < x || min.second < y)
+                    min = std::make_pair(x, y);
+                if (max.first > x || max.second > y)
+                    max = std::make_pair(x, y);
+            }
+        }
+    }
+
+    return std::make_pair(min, max);
 }
 
 
