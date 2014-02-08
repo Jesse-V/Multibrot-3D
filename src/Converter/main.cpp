@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     }
     std::cout << "done." << std::endl;
 
-    for (std::size_t x = 0; x <= SIZE - 128; x += 128)
+    for (std::size_t x = 0; x < SIZE; x += 128)
         for (std::size_t y = 0; y < SIZE; y++)
             matrix[x][y] = 0;
 
@@ -37,9 +37,9 @@ int main(int argc, char** argv)
     writeMatrix(matrix, std::string("image_post.ppm"), (short)max);
     std::cout << "done." << std::endl;
 
-    //std::cout << "Writing geometry... ";
-    //writeGeometry(matrix, std::string("geometry.dat"), max);
-    //std::cout << "done." << std::endl;
+    std::cout << "Writing geometry... ";
+    writeGeometry(matrix, std::string("geometry.dat"), max);
+    std::cout << "done." << std::endl;
 
     std::cout << "Program complete." << std::endl;
 
@@ -134,4 +134,11 @@ void writeMatrix(Matrix2D& matrix, std::string filename, short max)
         fout << std::endl;
     }
     fout.close();
+}
+
+
+
+void writeGeometry(Matrix2D& matrix, std::string filename)
+{
+
 }
