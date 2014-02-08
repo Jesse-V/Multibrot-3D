@@ -4,16 +4,12 @@
 
 #PBS -N converter
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=01:05:00
+#PBS -l walltime=01:00:00
 #PBS -M jvictors@jessevictors.com
 
 #PBS -j oe
 #PBS -m abe
 
 . /rc/tools/utils/dkinit
-# use OpenMPI-GCC-4.8
-
-#LD_LIBRARY_PATH=/home/A01514050:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH
 
 multibrot/converter/converter

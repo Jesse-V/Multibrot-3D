@@ -4,7 +4,7 @@
 
 #PBS -N multibrot
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=03:05:00
+#PBS -l walltime=06:00:00
 #PBS -M jvictors@jessevictors.com
 
 #PBS -j oe

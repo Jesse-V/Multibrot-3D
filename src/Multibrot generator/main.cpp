@@ -15,11 +15,12 @@ const float MAX_HEIGHT = 1024;
 
 int main(int argc, char** argv)
 {
-    for (int height = 434; height < MAX_HEIGHT; height++)
+    for (int height = 1; height <= MAX_HEIGHT; height++)
     {
         float d = (height / (float)MAX_HEIGHT) * 32 + 1;
 
         std::cout << "Processing " << height << " / " << MAX_HEIGHT << " (" << d << ") ... ";
+        std::cout.flush();
 
         std::queue<Chunk> chunks;
         for (unsigned int x = 0; x < IMAGE_SIZE; x += CHUNK_SIZE)
@@ -36,11 +37,15 @@ int main(int argc, char** argv)
             chunks.pop();
         }
 
-        std::cout << "done" << std::endl;
+        std::cout << "writing...";
+        std::cout.flush();
 
         std::stringstream filename;
         filename << "multibrot,d=" << d << ".dat";
         writeMatrix(matrix, filename.str());
+
+        std::cout << "done" << std::endl;
+        std::cout.flush();
     }
 
     std::cout << "Program complete." << std::endl;
@@ -149,7 +154,7 @@ void writeMatrix(Matrix2D& matrix, std::string filename)
             else
             {
                 fout << count << " ";
-                count = 0;
+                count = 1;
                 state = !state;
             }
         }

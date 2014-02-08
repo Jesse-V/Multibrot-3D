@@ -1,5 +1,6 @@
 #!/bin/sh
 ./clean.sh
+use OpenMPI-GCC-4.8
 if (./compile.sh) then
     qsub job.sh
     echo "Reschedule complete."
