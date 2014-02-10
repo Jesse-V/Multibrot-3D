@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     std::cout << "done." << std::endl;
 
     std::cout << "Writing island-less image... ";
-    writeMatrix(matrix, std::string("image_phase2.ppm"), 2);
+    writeMatrix(matrix, std::string("image_phase2.ppm"), 1);
     std::cout << "done." << std::endl;
 
     std::cout << "Compressing. Looking for boxes of size ";
@@ -35,13 +35,13 @@ int main(int argc, char** argv)
     std::cout << "done." << std::endl;
 
     std::cout << "Writing compressed image... ";
-    writeMatrix(matrix, std::string("image_phase3.ppm"), (short)boxSize);
+    writeMatrix(matrix, std::string("image_phase3.ppm"), (short)boxSize / 2);
     std::cout << "done." << std::endl;
 
-    std::cout << "Writing geometry... ";
+    std::cout << "Calculating geometry... ";
     writeGeometry(matrix, std::string("geometry.dat"));
-    writeMatrix(matrix, std::string("image_phase4.ppm"), (short)boxSize);
-    std::cout << "done." << std::endl;
+    writeMatrix(matrix, std::string("image_phase4.ppm"), (short)boxSize / 2);
+    std::cout << "finished calculations." << std::endl;
 
     std::cout << "Program complete." << std::endl;
 
@@ -171,7 +171,9 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
     std::ofstream fout;
     fout.open(filename, std::ofstream::out);
 
-    short boxSize = 1;
+    std::cout << "eliminating boxes of size ";
+
+    short boxSize = 2;
     bool found;
     do
     {
@@ -186,14 +188,12 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
             if (startPoint.first < 0 || startPoint.second < 0)
                 break; //box not found
 
-            Bounds2D bounds = eliminateBoxOf(matrix, getPointOf(matrix, boxSize));
+            Bounds2D bounds = eliminateBoxOf(matrix, startPoint);
             if (boxSize == 1) //dealing with points
             {
                 for (int x = bounds.first.first; x <= bounds.second.first; x++)
                     for (int y = bounds.first.second; y <= bounds.second.second; y++)
-                            fout << x << " " << y << std::endl;
-
-                //TODO: it'd be really great if GL_LINES could be used efficiently
+                        fout << x << " " << y << std::endl;
             }
             else
             {
@@ -209,6 +209,8 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
         boxSize *= 2;
 
     } while (found);
+
+    std::cout << "eliminations complete, ";
 
     fout.close();
 }
@@ -227,74 +229,35 @@ Point2D getPointOf(Matrix2D& matrix, short boxSize)
 
 
 
+//the given point must be the upper left corner (minimum) of the box
 Bounds2D eliminateBoxOf(Matrix2D& matrix, Point2D point)
 {
-    short targetBoxSize = matrix[(std::size_t)point.first][(std::size_t)point.second];
-    matrix[(std::size_t)point.first][(std::size_t)point.second] = -1;
+    std::size_t startX = (std::size_t)point.first, startY = (std::size_t)point.second;
+    short boxSize = matrix[startX][startY];
+    matrix[startX][startY] = -1;
 
-    bool expanded;
-    do
-    {
-        expanded = false;
+    //look x+ and y+ direction due to algorithm in getPointOf
+    std::size_t xLength = 1; //number of boxes in the x direction
+    while (matrix[startX + xLength * boxSize][startY] == boxSize)
+        xLength++;
 
-        for (std::size_t x = 0; x < SIZE; x++)
-        {
-            for (std::size_t y = 0; y < SIZE; y++)
-            {
-                if (matrix[x][y] < 0) //if already marked
-                {
-                    if (matrix[x][y - 1] == targetBoxSize)
-                    {
-                        matrix[x][y - 1] = -1;
-                        expanded = true;
-                    }
+    std::size_t yLength = 1; //number of boxes in the x direction
+    while (matrix[startX][startY + yLength * boxSize] == boxSize)
+        yLength++;
 
-                    if (matrix[x][y + 1] == targetBoxSize)
-                    {
-                        matrix[x][y + 1] = -1;
-                        expanded = true;
-                    }
+    //it's guaranteed at this point that x != 2 && y != 2
 
-                    if (matrix[x - 1][y] == targetBoxSize)
-                    {
-                        matrix[x - 1][y] = -1;
-                        expanded = true;
-                    }
+    Point2D max;
+    if (xLength > yLength)
+        max = std::make_pair(point.first + xLength * boxSize, point.second + boxSize);
+    else
+        max = std::make_pair(point.first + boxSize, point.second + yLength * boxSize);
 
-                    if (matrix[x + 1][y] == targetBoxSize)
-                    {
-                        matrix[x + 1][y] = -1;
-                        expanded = true;
-                    }
-                }
-            }
-        }
+    for (short x = point.first; x < max.first; x++)
+        for (short y = point.second; y < max.second; y++)
+            matrix[(std::size_t)x][(std::size_t)y] = 0; //eliminate
 
-    } while (expanded);
-
-    Point2D min = std::make_pair(SIZE, SIZE), max = std::make_pair(-1, -1);
-    for (int x = 0; x < (int)SIZE; x++)
-    {
-        for (int y = 0; y < (int)SIZE; y++)
-        {
-            if (matrix[(std::size_t)x][(std::size_t)y] < 0) //if marked
-            {
-                matrix[(std::size_t)x][(std::size_t)y] = 0; //eliminate
-
-                if (x < min.first)
-                    min.first = (int)x;
-                if (y < min.second)
-                    min.second = (int)y;
-
-                if (x > max.first)
-                    max.first = (int)x;
-                if (y > max.second)
-                    max.second = (int)y;
-            }
-        }
-    }
-
-    return std::make_pair(min, max);
+    return std::make_pair(point, max);
 }
 
 
@@ -315,7 +278,7 @@ void writeMatrix(Matrix2D& matrix, std::string filename, short max)
             else if (cell == 1)
                 fout << "0 255 0 ";
             else
-                fout << gray << " " << gray << " " << gray << " ";
+                fout << (gray / 2) << " " << gray << " " << gray << " ";
         }
 
         fout << std::endl;
