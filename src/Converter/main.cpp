@@ -173,7 +173,7 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
 
     std::cout << "eliminating boxes of size ";
 
-    short boxSize = 2;
+    short boxSize = 1; //initialize to minimum box size
     bool found;
     do
     {
@@ -191,13 +191,20 @@ void writeGeometry(Matrix2D& matrix, std::string filename)
             Bounds2D bounds = eliminateBoxOf(matrix, startPoint);
             if (boxSize == 1) //dealing with points
             {
-                for (int x = bounds.first.first; x <= bounds.second.first; x++)
-                    for (int y = bounds.first.second; y <= bounds.second.second; y++)
-                        fout << x << " " << y << std::endl;
+                auto diffX = bounds.second.first - bounds.first.first;
+                auto diffY = bounds.second.second - bounds.first.second;
+
+                if (diffX == 1 && diffY == 1) //if point
+                    fout << "1 " << bounds.first.first << " " << bounds.first.second << std::endl;
+                else //if line
+                    fout << "2 " << bounds.first.first <<
+                        " " << bounds.first.second <<
+                        " " << bounds.second.first <<
+                        " " << bounds.second.second << std::endl;
             }
-            else
+            else //dealing with squares
             {
-                fout << bounds.first.first <<
+                fout << "4 " << bounds.first.first <<
                     " " << bounds.first.second <<
                     " " << bounds.second.first <<
                     " " << bounds.second.second << std::endl;
@@ -253,8 +260,8 @@ Bounds2D eliminateBoxOf(Matrix2D& matrix, Point2D point)
     else
         max = std::make_pair(point.first + boxSize, point.second + yLength * boxSize);
 
-    for (short x = point.first; x < max.first; x++)
-        for (short y = point.second; y < max.second; y++)
+    for (int x = point.first; x < max.first; x++)
+        for (int y = point.second; y < max.second; y++)
             matrix[(std::size_t)x][(std::size_t)y] = 0; //eliminate
 
     return std::make_pair(point, max);
