@@ -8,17 +8,26 @@
 
 
 const std::size_t SIZE = 1024;
-const std::size_t HEIGHT = 1;
+const std::size_t HEIGHT = 16;
 
 
 int main(int argc, char** argv)
 {
-    std::vector<std::string> files{"multibrot,d=2.dat"};
+    std::vector<std::string> files;
+    for (int j = 64; j < 80; j++)
+    {
+        std::stringstream ss("");
+        ss << "multibrot,d=" << (j / (float)32) << ".dat";
+        std::cout << ss.str() << std::endl;
+        files.push_back(ss.str());
+    }
     Matrix3D matrix = readMatrix(files);
 
     std::cout << "Remove islands... ";
+    std::cout.flush();
     removeIslands(matrix, SIZE / 2, SIZE / 2);
     std::cout << "done." << std::endl;
+    std::cout.flush();
 
     std::cout << "Compressing. Looking for boxes of size ";
     std::size_t boxSize = 1;
@@ -158,22 +167,22 @@ bool compress(Matrix3D& matrix, std::size_t lookingFor)
     auto newSize = lookingFor * 2;
     bool found = false;
 
-    for (std::size_t d = 0; d <= HEIGHT - newSize; d += newSize)
+    for (std::size_t d = 0; d < HEIGHT - newSize; d += newSize)
     {
         for (std::size_t x = 0; x <= SIZE - newSize; x += newSize)
         {
             for (std::size_t y = 0; y <= SIZE - newSize; y += newSize)
             {
-                if (matrix[d][x][y] == (short)lookingFor && //current cell
+                if ((short)lookingFor == matrix[d][x][y] && //current cell
 
-                    lookingFor == matrix[d][x + lookingFor][y] && //current layer
-                    lookingFor == matrix[d][x + lookingFor][y + lookingFor] &&
-                    lookingFor == matrix[d][x][y + lookingFor] &&
+                    (short)lookingFor == matrix[d][x + lookingFor][y] && //current layer
+                    (short)lookingFor == matrix[d][x + lookingFor][y + lookingFor] &&
+                    (short)lookingFor == matrix[d][x][y + lookingFor] &&
 
-                    lookingFor == matrix[d + lookingFor][x][y] && //next layer
-                    lookingFor == matrix[d + lookingFor][x + lookingFor][y] &&
-                    lookingFor == matrix[d + lookingFor][x + lookingFor][y + lookingFor] &&
-                    lookingFor == matrix[d + lookingFor][x][y + lookingFor]
+                    (short)lookingFor == matrix[d + lookingFor][x][y] && //next layer
+                    (short)lookingFor == matrix[d + lookingFor][x + lookingFor][y] &&
+                    (short)lookingFor == matrix[d + lookingFor][x + lookingFor][y + lookingFor] &&
+                    (short)lookingFor == matrix[d + lookingFor][x][y + lookingFor]
                 )
                 {
                     found = true;
@@ -287,15 +296,15 @@ Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
     //look d+ and x+ and y+ direction due to algorithm in getPointOf
 
     std::size_t dLength = 1; //number of boxes in the x direction
-    while (matrix[sD + dLength * boxSize][sX][sY] == boxSize)
+    while (sD + dLength * boxSize < HEIGHT && matrix[sD + dLength * boxSize][sX][sY] == boxSize)
         dLength++;
 
     std::size_t xLength = 1; //number of boxes in the x direction
-    while (matrix[sD][sX + xLength * boxSize][sY] == boxSize)
+    while (sX + xLength * boxSize < SIZE && matrix[sD][sX + xLength * boxSize][sY] == boxSize)
         xLength++;
 
     std::size_t yLength = 1; //number of boxes in the x direction
-    while (matrix[sD][sX][sY + yLength * boxSize] == boxSize)
+    while (sY + yLength * boxSize < SIZE && matrix[sD][sX][sY + yLength * boxSize] == boxSize)
         yLength++;
 
     //it's guaranteed at this point that d != 2 && x != 2 && y != 2
@@ -306,11 +315,10 @@ Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
     for (std::size_t j = 1; j < lengths.size(); j++)
         lengths[j] = 1; //set all non-max to 1
 
-    std::cout << lengths[0] << "|" << lengths[1] << "|" << lengths[2] << "|" << std::endl;
 
-    Point3D max = Point3D(sD + dLength * boxSize,
-                          sX + xLength * boxSize,
-                          sY + yLength * boxSize);
+    Point3D max = Point3D((int)(sD + dLength * boxSize),
+                          (int)(sX + xLength * boxSize),
+                          (int)(sY + yLength * boxSize));
 
     for (int d = point.d_; d < max.d_; d++)
         for (int x = point.x_; x < max.x_; x++)
