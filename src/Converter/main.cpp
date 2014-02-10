@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iterator>
+#include <algorithm>
 #include <iostream>
 
 
@@ -15,17 +16,9 @@ int main(int argc, char** argv)
     std::vector<std::string> files{"multibrot,d=2.dat"};
     Matrix3D matrix = readMatrix(files);
 
-    //std::cout << "Writing pre image... ";
-    //writeMatrix(matrix, std::string("image_phase1.ppm"), 1);
-    //std::cout << "done." << std::endl;
-
     std::cout << "Remove islands... ";
     removeIslands(matrix, SIZE / 2, SIZE / 2);
     std::cout << "done." << std::endl;
-
-    //std::cout << "Writing island-less image... ";
-    //writeMatrix(matrix, std::string("image_phase2.ppm"), 1);
-    //std::cout << "done." << std::endl;
 
     std::cout << "Compressing. Looking for boxes of size ";
     std::size_t boxSize = 1;
@@ -36,13 +29,8 @@ int main(int argc, char** argv)
     }
     std::cout << "done." << std::endl;
 
-    //std::cout << "Writing compressed image... ";
-    //writeMatrix(matrix, std::string("image_phase3.ppm"), (short)boxSize / 2);
-    //std::cout << "done." << std::endl;
-
     std::cout << "Calculating geometry, ";
     writeGeometry(matrix, std::string("geometry.dat"));
-    //writeMatrix(matrix, std::string("image_phase4.ppm"), (short)boxSize / 2);
     std::cout << "finished." << std::endl;
 
     std::cout << "Program complete." << std::endl;
@@ -163,28 +151,37 @@ void removeIslands(Matrix3D& matrix, std::size_t startX, std::size_t startY)
                 //all marked are good, otherwise remove
 }
 
-/*                                  BELOW NEEDS 3D CONVERSION                 */
+
 
 bool compress(Matrix3D& matrix, std::size_t lookingFor)
 {
     auto newSize = lookingFor * 2;
     bool found = false;
 
-    for (std::size_t x = 0; x <= SIZE - newSize; x += newSize)
+    for (std::size_t d = 0; d <= HEIGHT - newSize; d += newSize)
     {
-        for (std::size_t y = 0; y <= SIZE - newSize; y += newSize)
+        for (std::size_t x = 0; x <= SIZE - newSize; x += newSize)
         {
-            if (matrix[x][y] == (short)lookingFor)
+            for (std::size_t y = 0; y <= SIZE - newSize; y += newSize)
             {
-                if (lookingFor == matrix[x + lookingFor][y] &&
-                    lookingFor == matrix[x + lookingFor][y + lookingFor] &&
-                    lookingFor == matrix[x][y + lookingFor]
-                )
-                    for (std::size_t j = 0; j < newSize; j++)
-                        for (std::size_t k = 0; k < newSize; k++)
-                            matrix[x + j][y + k] = (short)newSize;
+                if (matrix[d][x][y] == (short)lookingFor && //current cell
 
-                found = true;
+                    lookingFor == matrix[d][x + lookingFor][y] && //current layer
+                    lookingFor == matrix[d][x + lookingFor][y + lookingFor] &&
+                    lookingFor == matrix[d][x][y + lookingFor] &&
+
+                    lookingFor == matrix[d + lookingFor][x][y] && //next layer
+                    lookingFor == matrix[d + lookingFor][x + lookingFor][y] &&
+                    lookingFor == matrix[d + lookingFor][x + lookingFor][y + lookingFor] &&
+                    lookingFor == matrix[d + lookingFor][x][y + lookingFor]
+                )
+                {
+                    found = true;
+                    for (std::size_t q = 0; q < newSize; q++)
+                        for (std::size_t r = 0; r < newSize; r++)
+                            for (std::size_t s = 0; s < newSize; s++)
+                                matrix[d + q][x + r][y + s] = (short)newSize;
+                }
             }
         }
     }
@@ -215,36 +212,41 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
         while (true) //eliminate all boxes
         {
             startPoint = getPointOf(matrix, boxSize);
-            if (startPoint.first < 0 || startPoint.second < 0)
+            if (startPoint.d_ < 0 || startPoint.x_ < 0 || startPoint.y_ < 0)
                 break; //box not found
 
             Bounds2D bounds = eliminateBoxOf(matrix, startPoint);
             if (boxSize == 1) //dealing with points
             {
-                auto diffX = bounds.second.first - bounds.first.first;
-                auto diffY = bounds.second.second - bounds.first.second;
+                auto diffD = bounds.second.d_ - bounds.first.d_;
+                auto diffX = bounds.second.x_ - bounds.first.x_;
+                auto diffY = bounds.second.y_ - bounds.first.y_;
 
-                if (diffX == 1 && diffY == 1) //if point
+                if (diffD == 1 && diffX == 1 && diffY == 1) //if point
                 {
                     pointCount++;
-                    fout << "1 " << bounds.first.first << " " << bounds.first.second << std::endl;
+                    fout << "1 " << bounds.first.d_ << " " << bounds.first.x_ << " " << bounds.first.y_ << std::endl;
                 }
                 else //if line
                 {
                     lineCount++;
-                    fout << "2 " << bounds.first.first <<
-                        " " << bounds.first.second <<
-                        " " << bounds.second.first <<
-                        " " << bounds.second.second << std::endl;
+                    fout << "4 " << bounds.first.d_ <<
+                        " " << bounds.first.x_ <<
+                        " " << bounds.first.y_ <<
+                        " " << bounds.second.d_ <<
+                        " " << bounds.second.x_ <<
+                        " " << bounds.second.y_ << std::endl;
                 }
             }
             else //dealing with squares
             {
                 squareCount++;
-                fout << "4 " << bounds.first.first <<
-                    " " << bounds.first.second <<
-                    " " << bounds.second.first <<
-                    " " << bounds.second.second << std::endl;
+                fout << "4 " << bounds.first.x_ <<
+                    " " << bounds.first.x_ <<
+                    " " << bounds.first.y_ <<
+                    " " << bounds.second.d_ <<
+                    " " << bounds.second.x_ <<
+                    " " << bounds.second.y_ << std::endl;
             }
 
             found = true;
@@ -264,71 +266,56 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
 
 Point3D getPointOf(Matrix3D& matrix, short boxSize)
 {
-    for (std::size_t x = 0; x < SIZE; x++)
-        for (std::size_t y = 0; y < SIZE; y++)
-            if (matrix[x][y] == boxSize)
-                return std::make_pair((int)x, (int)y);
+    for (std::size_t d = 0; d < HEIGHT; d++)
+        for (std::size_t x = 0; x < SIZE; x++)
+            for (std::size_t y = 0; y < SIZE; y++)
+                if (matrix[d][x][y] == boxSize)
+                    return Point3D((int)d, (int)x, (int)y);
 
-    return std::make_pair(-1, -1);
+    return Point3D(-1, -1, -1);
 }
 
 
 
 //the given point must be the upper left corner (minimum) of the box
-Bounds3D eliminateBoxOf(Matrix3D& matrix, Point2D point)
+Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
 {
-    std::size_t startX = (std::size_t)point.first, startY = (std::size_t)point.second;
-    short boxSize = matrix[startX][startY];
-    matrix[startX][startY] = -1;
+    std::size_t sD = (std::size_t)point.d_, sX = (std::size_t)point.x_, sY = (std::size_t)point.y_;
+    short boxSize = matrix[sD][sX][sY];
+    matrix[sD][sX][sY] = -1;
 
-    //look x+ and y+ direction due to algorithm in getPointOf
+    //look d+ and x+ and y+ direction due to algorithm in getPointOf
+
+    std::size_t dLength = 1; //number of boxes in the x direction
+    while (matrix[sD + dLength * boxSize][sX][sY] == boxSize)
+        dLength++;
+
     std::size_t xLength = 1; //number of boxes in the x direction
-    while (matrix[startX + xLength * boxSize][startY] == boxSize)
+    while (matrix[sD][sX + xLength * boxSize][sY] == boxSize)
         xLength++;
 
     std::size_t yLength = 1; //number of boxes in the x direction
-    while (matrix[startX][startY + yLength * boxSize] == boxSize)
+    while (matrix[sD][sX][sY + yLength * boxSize] == boxSize)
         yLength++;
 
-    //it's guaranteed at this point that x != 2 && y != 2
+    //it's guaranteed at this point that d != 2 && x != 2 && y != 2
 
-    Point2D max;
-    if (xLength > yLength)
-        max = std::make_pair(point.first + xLength * boxSize, point.second + boxSize);
-    else
-        max = std::make_pair(point.first + boxSize, point.second + yLength * boxSize);
+    std::vector<std::size_t> lengths{dLength, xLength, yLength};
+    std::sort(lengths.begin(), lengths.end());
 
-    for (int x = point.first; x < max.first; x++)
-        for (int y = point.second; y < max.second; y++)
-            matrix[(std::size_t)x][(std::size_t)y] = 0; //eliminate
+    for (std::size_t j = 1; j < lengths.size(); j++)
+        lengths[j] = 1; //set all non-max to 1
+
+    std::cout << lengths[0] << "|" << lengths[1] << "|" << lengths[2] << "|" << std::endl;
+
+    Point3D max = Point3D(sD + dLength * boxSize,
+                          sX + xLength * boxSize,
+                          sY + yLength * boxSize);
+
+    for (int d = point.d_; d < max.d_; d++)
+        for (int x = point.x_; x < max.x_; x++)
+            for (int y = point.y_; y < max.y_; y++)
+                matrix[(std::size_t)d][(std::size_t)x][(std::size_t)y] = 0; //eliminate
 
     return std::make_pair(point, max);
 }
-
-
-
-/*
-void writeMatrix(Matrix3D& matrix, std::string filename, short max)
-{
-    std::ofstream fout;
-    fout.open(filename, std::ofstream::out);
-
-    fout << "P3 " << SIZE << " " << SIZE << " 255" << std::endl;
-    for (const auto &row : matrix)
-    {
-        for (const auto &cell : row)
-        {
-            int gray = (int)(cell / (float)max * 255);
-            if (cell == 0)
-                fout << "0 0 255 ";
-            else if (cell == 1)
-                fout << "0 255 0 ";
-            else
-                fout << (gray / 2) << " " << gray << " " << gray << " ";
-        }
-
-        fout << std::endl;
-    }
-    fout.close();
-}
-*/

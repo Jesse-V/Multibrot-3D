@@ -4,11 +4,15 @@
 
 struct Point3D
 {
-    Point3D(int x, int y, int z):
-        x_(x), y_(y), z_(z)
+    Point3D():
+        d_(0), x_(0), y_(0)
     {}
 
-    int x_, y_, z_;
+    Point3D(int x, int y, int z):
+        d_(x), x_(y), y_(z)
+    {}
+
+    int d_, x_, y_;
 };
 
 #include <vector>
@@ -24,6 +28,5 @@ bool compress(Matrix3D& matrix, std::size_t level);
 void writeGeometry(Matrix3D& matrix, std::string filename);
 Point3D getPointOf(Matrix3D& matrix, short boxSize);
 Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point);
-void writeMatrix(Matrix3D& matrix, std::string filename, short max);
 
 #endif
