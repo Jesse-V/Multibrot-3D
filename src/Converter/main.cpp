@@ -8,34 +8,32 @@
 
 
 const std::size_t SIZE = 1024;
-const std::size_t HEIGHT = 16;
+const std::size_t HEIGHT = 1024;
 
 
 int main(int argc, char** argv)
 {
     std::vector<std::string> files;
-    for (int j = 64; j < 80; j++)
+    for (int j = 1; j <= 1024; j++)
     {
         std::stringstream ss("");
-        ss << "multibrot,d=" << (j / (float)32) << ".dat";
-        std::cout << ss.str() << std::endl;
+        ss << "multibrot,d=" << (j / (float)32 + 1) << ".dat";
+        //std::cout << ss.str() << std::endl;
         files.push_back(ss.str());
     }
+
     Matrix3D matrix = readMatrix(files);
 
     std::cout << "Remove islands... ";
     std::cout.flush();
-    removeIslands(matrix, SIZE / 2, SIZE / 2);
+    removeIslands(matrix, HEIGHT / 2, SIZE / 2, SIZE / 2);
     std::cout << "done." << std::endl;
     std::cout.flush();
 
     std::cout << "Compressing. Looking for boxes of size ";
     std::size_t boxSize = 1;
     while (compress(matrix, boxSize))
-    {
-        std::cout << boxSize << " ";
         boxSize *= 2;
-    }
     std::cout << "done." << std::endl;
 
     std::cout << "Calculating geometry, ";
@@ -58,6 +56,9 @@ Matrix3D readMatrix(std::vector<std::string>& filenames)
     {
         std::ifstream file;
         file.open(filename, std::ifstream::in);
+        if (file.fail())
+            std::cout << "Unable to open \"" << filename << "\"!" << std::endl;
+
         std::vector<std::vector<int>> allIntegers;
         while (getline(file, line))
         {
@@ -92,9 +93,11 @@ Matrix3D readMatrix(std::vector<std::string>& filenames)
 
 
 
-void removeIslands(Matrix3D& matrix, std::size_t startX, std::size_t startY)
+void removeIslands(Matrix3D& matrix, std::size_t startD, std::size_t startX, std::size_t startY)
 {
-    matrix[matrix.size() / 2][startX][startY] = -1;
+    if (matrix[startD][startX][startY] == 0)
+        std::cout << "WARNING: start position is not in set!" << std::endl;
+    matrix[startD][startX][startY] = -1;
 
     bool expanded;
     do
@@ -164,6 +167,7 @@ void removeIslands(Matrix3D& matrix, std::size_t startX, std::size_t startY)
 
 bool compress(Matrix3D& matrix, std::size_t lookingFor)
 {
+    std::cout << lookingFor << " ";
     auto newSize = lookingFor * 2;
     bool found = false;
 
@@ -239,7 +243,7 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
                 else //if line
                 {
                     lineCount++;
-                    fout << "4 " << bounds.first.d_ <<
+                    fout << "2 " << bounds.first.d_ <<
                         " " << bounds.first.x_ <<
                         " " << bounds.first.y_ <<
                         " " << bounds.second.d_ <<
@@ -250,7 +254,7 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
             else //dealing with squares
             {
                 squareCount++;
-                fout << "4 " << bounds.first.x_ <<
+                fout << "4 " << bounds.first.d_ <<
                     " " << bounds.first.x_ <<
                     " " << bounds.first.y_ <<
                     " " << bounds.second.d_ <<
