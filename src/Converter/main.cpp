@@ -177,16 +177,16 @@ bool compress(Matrix3D& matrix, std::size_t lookingFor)
         {
             for (std::size_t y = 0; y <= SIZE - newSize; y += newSize)
             {
-                if ((short)lookingFor == matrix[d][x][y] && //current cell
+                if (
+                (short)lookingFor == matrix[d][x][y] && //current cell
+                (short)lookingFor == matrix[d][x + lookingFor][y] && //current layer
+                (short)lookingFor == matrix[d][x + lookingFor][y + lookingFor] &&
+                (short)lookingFor == matrix[d][x][y + lookingFor] &&
 
-                    (short)lookingFor == matrix[d][x + lookingFor][y] && //current layer
-                    (short)lookingFor == matrix[d][x + lookingFor][y + lookingFor] &&
-                    (short)lookingFor == matrix[d][x][y + lookingFor] &&
-
-                    (short)lookingFor == matrix[d + lookingFor][x][y] && //next layer
-                    (short)lookingFor == matrix[d + lookingFor][x + lookingFor][y] &&
-                    (short)lookingFor == matrix[d + lookingFor][x + lookingFor][y + lookingFor] &&
-                    (short)lookingFor == matrix[d + lookingFor][x][y + lookingFor]
+                (short)lookingFor == matrix[d + lookingFor][x][y] && //next layer
+                (short)lookingFor == matrix[d + lookingFor][x + lookingFor][y] &&
+                (short)lookingFor == matrix[d + lookingFor][x + lookingFor][y + lookingFor] &&
+                (short)lookingFor == matrix[d + lookingFor][x][y + lookingFor]
                 )
                 {
                     found = true;
@@ -211,9 +211,11 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
 
     std::cout << "eliminating boxes of size ";
 
-    unsigned int pointCount = 0, lineCount = 0, squareCount = 0;
+    unsigned int pointCount = 0, lineCount = 0, planeCount = 0, cubeCount = 0;
 
-    short boxSize = 1; //initialize to minimum box size
+    int state = 0;
+
+    short boxSize = 8; //initialize to minimum box size
     bool found;
     do
     {
@@ -228,6 +230,14 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
             if (startPoint.d_ < 0 || startPoint.x_ < 0 || startPoint.y_ < 0)
                 break; //box not found
 
+            if (startPoint.d_ != state)
+            {
+                std::cout << boxSize << ", " << startPoint.d_ << std::endl;
+                state = startPoint.d_;
+            }
+
+            int flag = 0;
+
             Bounds2D bounds = eliminateBoxOf(matrix, startPoint);
             if (boxSize == 1) //dealing with points
             {
@@ -235,32 +245,45 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
                 auto diffX = bounds.second.x_ - bounds.first.x_;
                 auto diffY = bounds.second.y_ - bounds.first.y_;
 
-                if (diffD == 1 && diffX == 1 && diffY == 1) //if point
-                {
+                std::vector<int> sizes{diffD, diffX, diffY};
+                std::sort(sizes.begin(), sizes.end());
+
+                //smallest, middle, largest
+
+                if (sizes[2] == 1)
+                { //know that sizes[0] == sizes[1] == 1, so clearly a point
                     pointCount++;
-                    fout << "1 " << bounds.first.d_ << " " << bounds.first.x_ << " " << bounds.first.y_ << std::endl;
+                    flag = 1;
                 }
-                else //if line
-                {
+                else if (sizes[1] == 1)
+                { //know that sizes[2] is the only one > 1
                     lineCount++;
-                    fout << "2 " << bounds.first.d_ <<
-                        " " << bounds.first.x_ <<
-                        " " << bounds.first.y_ <<
-                        " " << bounds.second.d_ <<
-                        " " << bounds.second.x_ <<
-                        " " << bounds.second.y_ << std::endl;
+                    flag = 2;
+                }
+                else if (sizes[0] == 1)
+                { //we know that sizes[1] > 1 && sizes[2] > 1, so a plane
+                    planeCount++;
+                    flag = 3;
+                }
+                else
+                { //know all three are > 1, so clearly a cube
+                    cubeCount++;
+                    flag = 4;
+                    //std::cout << "Actually executed!" << std::endl;
                 }
             }
             else //dealing with squares
             {
-                squareCount++;
-                fout << "4 " << bounds.first.d_ <<
-                    " " << bounds.first.x_ <<
-                    " " << bounds.first.y_ <<
-                    " " << bounds.second.d_ <<
-                    " " << bounds.second.x_ <<
-                    " " << bounds.second.y_ << std::endl;
+                cubeCount++;
+                flag = 4;
             }
+
+            fout << flag << " " << bounds.first.d_ <<
+                " " << bounds.first.x_ <<
+                " " << bounds.first.y_ <<
+                " " << bounds.second.d_ <<
+                " " << bounds.second.x_ <<
+                " " << bounds.second.y_ << std::endl;
 
             found = true;
         }
@@ -269,7 +292,7 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
 
     } while (found);
 
-    std::cout << "complete, (" << squareCount << "," <<
+    std::cout << "complete, (" << cubeCount << "," << planeCount << "," <<
         lineCount << "," << pointCount << ") ";
 
     fout.close();
