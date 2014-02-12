@@ -13,56 +13,30 @@ const std::size_t HEIGHT = 8;
 
 int main(int argc, char** argv)
 {
+    std::cout << "Reading files... ";
     std::vector<std::string> files;
-    for (int j = 1; j <= HEIGHT; j++)
+    for (std::size_t j = 1; j <= HEIGHT; j++)
     {
         std::stringstream ss("");
-        ss << "test" << j << ".txt";
-        //ss << "multibrot,d=" << (j / (float)32 + 1) << ".dat";
-        //std::cout << ss.str() << std::endl;
+        ss << "multibrot,d=" << (j / (float)32 + 1) << ".dat";
         files.push_back(ss.str());
     }
+    std::cout << "done." << std::endl;
 
     Matrix3D matrix = readMatrix(files);
 
     std::cout << "Remove islands... ";
     std::cout.flush();
-    //removeIslands(matrix, 0, 3, 2); //HEIGHT / 2, SIZE / 2, SIZE / 2
+    removeIslands(matrix, HEIGHT / 2, SIZE / 2, SIZE / 2);
     std::cout << "done." << std::endl;
     std::cout.flush();
-/*
-    for (std::size_t d = 0; d < HEIGHT; d++)
-    {
-        for (std::size_t x = 0; x < SIZE; x++)
-        {
-            for (std::size_t y = 0; y < SIZE; y++)
-            {
-                std::cout << matrix[d][x][y] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl << std::endl;
-    }
-*/
+
     std::cout << "Compressing. Looking for boxes of size ";
     std::size_t boxSize = 1;
     while (compress(matrix, boxSize))
         boxSize *= 2;
     std::cout << "done." << std::endl;
-/*
-    for (std::size_t d = 0; d < HEIGHT; d++)
-    {
-        for (std::size_t x = 0; x < SIZE; x++)
-        {
-            for (std::size_t y = 0; y < SIZE; y++)
-            {
-                std::cout << matrix[d][x][y] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl << std::endl;
-    }
-*/
+
     std::cout << "Calculating geometry, ";
     writeGeometry(matrix, std::string("geometry.dat"));
     std::cout << "finished." << std::endl;
@@ -216,7 +190,6 @@ bool compress(Matrix3D& matrix, std::size_t lookingFor)
                 (short)lookingFor == matrix[d + lookingFor][x][y + lookingFor]
                 )
                 {
-                    //std::cout << "(" << lookingFor << "," << d << "," << x << "," << y << ")" << std::endl;
                     found = true;
                     for (std::size_t q = 0; q < newSize; q++)
                         for (std::size_t r = 0; r < newSize; r++)
@@ -240,7 +213,7 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
     std::cout << "eliminating boxes of size ";
 
     unsigned int pointCount = 0, lineCount = 0, planeCount = 0, cubeCount = 0;
-    for (short boxSize = 1; boxSize < HEIGHT; boxSize *= 2)
+    for (short boxSize = 4; boxSize < (short)std::min(SIZE, HEIGHT); boxSize *= 2)
     {
         std::cout << boxSize << " ";
         std::cout.flush();
@@ -248,28 +221,14 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
         Point3D startPoint;
         while (true) //eliminate all boxes
         {
-            startPoint = getPointOf(matrix, boxSize, Point3D(0, 0, 0));
-            //std::cout << "sp:[" << startPoint.d_ << "," << startPoint.x_ << "," << startPoint.y_ << "]" << std::endl;
+            startPoint = getPointOf(matrix, boxSize);
             if (startPoint.d_ < 0 || startPoint.x_ < 0 || startPoint.y_ < 0)
                 break; //box not found
 
             int flag = 0;
 
             Bounds2D bounds = eliminateBoxOf(matrix, startPoint);
-/*
-            for (std::size_t d = 0; d < HEIGHT; d++)
-            {
-                for (std::size_t x = 0; x < SIZE; x++)
-                {
-                    for (std::size_t y = 0; y < SIZE; y++)
-                    {
-                        std::cout << matrix[d][x][y] << " ";
-                    }
-                    std::cout << std::endl;
-                }
-                std::cout << std::endl << std::endl;
-            }
-/*/
+
             if (boxSize == 1) //dealing with points
             {
                 auto diffD = bounds.second.d_ - bounds.first.d_;
@@ -326,11 +285,11 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
 
 
 
-Point3D getPointOf(Matrix3D& matrix, short boxSize, Point3D startPoint)
+Point3D getPointOf(Matrix3D& matrix, short boxSize)
 {
-    for (std::size_t d = startPoint.d_; d < HEIGHT; d++)
-        for (std::size_t x = startPoint.x_; x < SIZE; x++)
-            for (std::size_t y = startPoint.y_; y < SIZE; y++)
+    for (std::size_t d = 0; d < HEIGHT; d++)
+        for (std::size_t x = 0; x < SIZE; x++)
+            for (std::size_t y = 0; y < SIZE; y++)
                 if (matrix[d][x][y] == boxSize)
                     return Point3D((int)d, (int)x, (int)y);
 
@@ -359,8 +318,6 @@ Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
     std::size_t yLength = 0; //number of boxes in the x direction
     while (sY + (yLength + 1) * boxSize < SIZE && matrix[sD][sX][sY + (yLength + 1) * boxSize] == boxSize)
         yLength++;
-
-    //std::cout << "{" << dLength << "," << xLength << "," << yLength << "}";
 
     //keep track of largest element
     std::size_t maxLength = 0;
@@ -391,14 +348,10 @@ Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
     if (&yLength != maxDimension)
         yLength = 0;
 
-    //std::cout << "{" << dLength << "," << xLength << "," << yLength << "}" << std::endl;
-
     //max specifies the maximum bounds in only one dimension
     Point3D max = Point3D((int)(sD + dLength * boxSize),
                           (int)(sX + xLength * boxSize),
                           (int)(sY + yLength * boxSize));
-
-    //std::cout << "max:(" << max.d_ << "," << max.x_ << "," << max.y_ << ")" << std::endl;
 
     //eliminate area inside bounds
     for (int d = point.d_; d < sD + std::max((int)dLength, 1) * boxSize; d++)

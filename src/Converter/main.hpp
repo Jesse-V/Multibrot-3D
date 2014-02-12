@@ -26,7 +26,7 @@ Matrix3D readMatrix(std::vector<std::string>& filenames);
 void removeIslands(Matrix3D& matrix, std::size_t startD, std::size_t startX, std::size_t startY);
 bool compress(Matrix3D& matrix, std::size_t level);
 void writeGeometry(Matrix3D& matrix, std::string filename);
-Point3D getPointOf(Matrix3D& matrix, short boxSize, Point3D startPoint);
+Point3D getPointOf(Matrix3D& matrix, short boxSize);
 Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point);
 
 #endif
