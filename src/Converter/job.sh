@@ -4,7 +4,7 @@
 
 #PBS -N converter
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=10:50:00
+#PBS -l walltime=6:00:00
 #PBS -M jvictors@jessevictors.com
 
 #PBS -j oe
