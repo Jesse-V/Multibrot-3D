@@ -69,6 +69,7 @@ class User
         void onMouseClick(int button, int state, int x, int y);
         void onMouseMotion(int x, int y);
         void onMouseDrag(int x, int y);
+        static float getDotProduct(const glm::vec3& vecA, const glm::vec3& vecB);
 
     private:
         enum class KeyAction : short

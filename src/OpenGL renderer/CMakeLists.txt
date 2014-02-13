@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(folding-atomata)
+project(MultibrotRenderer)
 
 #find OpenGL
 find_package(OpenGL REQUIRED)
@@ -68,20 +68,17 @@ endif()
 include_directories(. libs)
 
 #organized by importance
-add_executable(FoldingAtomata
+add_executable(MultibrotRenderer
     main.cpp
     Options.cpp
 
     Viewer/Viewer.cpp
-    Viewer/SlotViewer.cpp
     Viewer/User.cpp
-    Viewer/FAHClientIO.cpp
 
     World/Scene.cpp
     World/Camera.cpp
     World/Light.cpp
 
-    PyON/TrajectoryParser.cpp
     PyON/StringManip.cpp
 
     Modeling/InstancedModel.cpp
@@ -98,28 +95,7 @@ add_executable(FoldingAtomata
     Modeling/Shading/Program.cpp
     Modeling/Shading/Shader.cpp
 
-    Trajectory/ProteinAnalysis.cpp
-    Trajectory/Trajectory.cpp
-    Trajectory/Topology.cpp
-    Trajectory/Snapshot.cpp
-    Trajectory/Atom.cpp
     Trajectory/BoundingBox.cpp
-
-    Sockets/ClientSocket.cpp
-    Sockets/Socket.cpp
 )
 
-target_link_libraries(FoldingAtomata glut GLEW GL ${GLEW_LIBRARIES} png)
-
-#for a "make install" installation
-set(DEB_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/debian/extra_includes")
-set(SKYBOX_FILES "${DEB_FOLDER}/skybox")
-set(SKYBOX_DESTINATION "/usr/share/FoldingAtomata/images/")
-set(MENU_DESKTOP_FILE "${DEB_FOLDER}/Folding Atomata.desktop")
-
-install(TARGETS FoldingAtomata     DESTINATION /usr/bin)
-install(FILES ${MENU_DESKTOP_FILE} DESTINATION /usr/share/applications)
-install(FILES ${DEB_FOLDER}/FoldingAtomata-logo.png DESTINATION /usr/share/pixmaps)
-install(FILES ${DEB_FOLDER}/FoldingAtomata.1.gz     DESTINATION /usr/share/man/man1)
-install(FILES ${DEB_FOLDER}/demoProtein       DESTINATION /usr/share/FoldingAtomata)
-install(FILES ${SKYBOX_FILES}/gradient.png DESTINATION ${SKYBOX_DESTINATION})
+target_link_libraries(MultibrotRenderer glut GLEW GL ${GLEW_LIBRARIES} png)

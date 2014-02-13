@@ -38,7 +38,6 @@
 
 #include "User.hpp"
 #include "World/Scene.hpp"
-#include "SlotViewer.hpp"
 #include <memory>
 
 class Viewer
@@ -56,11 +55,7 @@ class Viewer
         void reportFPS();
         void addModels();
         void addSkybox();
-        std::vector<BoundingBoxPtr> addSlotViewers();
-        void addBoundingBoxOutlines(const std::vector<BoundingBoxPtr>& boxes);
-        std::vector<TrajectoryPtr> getTrajectories();
         std::shared_ptr<Mesh> getSkyboxMesh();
-        std::shared_ptr<Mesh> getBoundingBoxMesh();
         std::shared_ptr<Camera> createCamera();
 
     private:
@@ -71,8 +66,6 @@ class Viewer
         float timeSpentRendering_;
         int frameCount_;
         bool needsRerendering_;
-
-        std::vector<std::shared_ptr<SlotViewer>> slotViewers_;
 };
 
 #endif

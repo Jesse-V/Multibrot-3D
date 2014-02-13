@@ -25,7 +25,6 @@
 
 #include "User.hpp"
 #include "World/Camera.hpp"
-#include "Viewer/SlotViewer.hpp"
 #include <GL/glut.h>
 #include <algorithm>
 #include <iostream>
@@ -268,8 +267,15 @@ void User::setWindowOffset(int x, int y)
 
 bool User::isMoving()
 {
-    const auto DELTA = SlotViewer::getDotProduct(movementDelta_, movementDelta_);
+    const auto DELTA = getDotProduct(movementDelta_, movementDelta_);
     bool test = DELTA > MINIMUM_SPEED || mouseMoved_;
     mouseMoved_ = false; //minor hack; isMoving() must be called from render()
     return test;
+}
+
+
+
+float User::getDotProduct(const glm::vec3& vecA, const glm::vec3& vecB)
+{
+    return vecA.x * vecB.x + vecA.y * vecB.y + vecA.z * vecB.z;
 }

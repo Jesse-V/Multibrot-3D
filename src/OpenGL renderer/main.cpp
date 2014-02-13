@@ -318,7 +318,7 @@ int main(int argc, char** argv)
     initializeGlutWindow(
         glutGet(GLUT_SCREEN_WIDTH),
         glutGet(GLUT_SCREEN_HEIGHT),
-        "Folding Atomata - third-party Folding@home simulation viewer"
+        "Multibrot Viewer"
     );
 
     try

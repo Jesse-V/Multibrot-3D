@@ -26,9 +26,6 @@
 #define _GLIBCXX_USE_NANOSLEEP
 
 #include "Viewer.hpp"
-#include "FAHClientIO.hpp"
-#include "Sockets/SocketException.hpp"
-#include "PyON/TrajectoryParser.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
 #include "Options.hpp"
@@ -89,11 +86,7 @@ void Viewer::reportFPS()
 
 void Viewer::addModels()
 {
-    auto boundingBoxes = addSlotViewers();
-    addBoundingBoxOutlines(boundingBoxes);
-
-    if (!Options::getInstance().skyboxDisabled())
-        addSkybox();
+    //TODO
 }
 
 
@@ -112,139 +105,6 @@ void Viewer::addSkybox()
     scene_->addModel(model); //add to Scene and save
 
     std::cout << "... done creating skybox." << std::endl;
-}
-
-
-
-std::vector<BoundingBoxPtr> Viewer::addSlotViewers()
-{
-    typedef glm::vec3 v3;
-    const std::vector<std::vector<v3>> OFFSET_UNIT_VECTORS{
-        { v3( 0, 0, 0) },
-        { v3( 0, 1, 0), v3( 0, -1, 0) },
-        { v3( 1, 0, 0), v3( 0,  1, 0), v3(0,  0,  1) },
-        { v3(-1, 1, 0), v3(-1, -1, 0), v3(1,  0, -1), v3( 1,  0, 1) },
-        { v3(-1, 1, 0), v3( 1,  1, 0), v3(1, -1,  0), v3(-1, -1, 0), v3(0, 0, 1) }
-    };
-
-    std::vector<TrajectoryPtr> trajectories = getTrajectories();
-    if (Options::getInstance().showOneSlot())
-    {
-        slotViewers_.push_back(std::make_shared<SlotViewer>(trajectories[0],
-            OFFSET_UNIT_VECTORS[0][0], scene_));
-        return { trajectories[0]->calculateBoundingBox() };
-    }
-
-    //fill this vector with the bounding boxes of each trajectory
-    std::vector<BoundingBoxPtr> boundingBoxes;
-    boundingBoxes.resize(trajectories.size());
-    std::transform(trajectories.begin(), trajectories.end(),
-        boundingBoxes.begin(), [&](const TrajectoryPtr& trajectory)
-        {
-            return trajectory->calculateBoundingBox();
-        }
-    );
-
-    //these vectors will be expanded so that no two bounding boxes overlap
-    std::cout << "Separating bounding boxes... ";
-    std::vector<BoundingBoxPtr> resizedBoxes(boundingBoxes);
-    auto offsetVectors = OFFSET_UNIT_VECTORS[trajectories.size() - 1];
-    bool boundingBoxesOverlap;
-    do
-    {
-        //determines whether or not any of the bounding boxes overlap
-        boundingBoxesOverlap = false;
-        for (std::size_t j = 0; j < resizedBoxes.size(); j++)
-            for (std::size_t k = j + 1; k < resizedBoxes.size(); k++)
-                if (resizedBoxes[j]->intersectsWith(resizedBoxes[k]))
-                    boundingBoxesOverlap = true;
-
-        //expand vectors if needed
-        if (boundingBoxesOverlap)
-        {
-            for (std::size_t j = 0; j < trajectories.size(); j++)
-            {
-                *resizedBoxes[j] = *boundingBoxes[j] + offsetVectors[j];
-                offsetVectors[j] *= 2;
-            }
-        }
-    } while (boundingBoxesOverlap);
-    std::cout << "done." << std::endl;
-
-    for (std::size_t j = 0; j < 5 && j < trajectories.size(); j++)
-        slotViewers_.push_back(std::make_shared<SlotViewer>(trajectories[j],
-            offsetVectors[j], scene_));
-
-    return resizedBoxes;
-}
-
-
-
-void Viewer::addBoundingBoxOutlines(const std::vector<BoundingBoxPtr>& boxes)
-{
-    std::cout << "Adding bounding box outlines..." << std::endl;
-
-    std::vector<glm::mat4> matrices;
-    matrices.resize(boxes.size());
-    std::transform(boxes.begin(), boxes.end(),
-        matrices.begin(), [&](const BoundingBoxPtr& boundingBox)
-        {
-            auto matrix = glm::translate(glm::mat4(), boundingBox->getMinimum());
-            return glm::scale(matrix, boundingBox->getSizes());
-        }
-    );
-
-    auto mesh = getBoundingBoxMesh();
-    BufferList list = {std::make_shared<ColorBuffer>(glm::vec3(0, 0.1f, 0), 8)};
-    scene_->addModel(std::make_shared<InstancedModel>(mesh, matrices, list));
-    std::cout << "... done adding bounding box outlines." << std::endl;
-}
-
-
-
-std::vector<TrajectoryPtr> Viewer::getTrajectories()
-{
-    std::vector<TrajectoryPtr> trajectories;
-
-    try
-    {
-        auto socket = std::make_shared<ClientSocket>(
-            Options::getInstance().getHost(),
-            Options::getInstance().getPort()
-        );
-
-        FAHClientIO io(socket);
-        trajectories = io.getTrajectories();
-
-        if (trajectories.empty())
-            std::cerr << "Not enough slots to work with. " <<
-                "Using demo protein." << std::endl;
-    }
-    catch (SocketException& se)
-    {
-        std::cerr << "Error connection to FAHClient (" << se.description() <<
-            "). Using demo protein." << std::endl;
-    }
-
-    if (trajectories.empty())
-    {
-        const std::string FILENAME = "/usr/share/FoldingAtomata/demoProtein";
-        std::ifstream fin(FILENAME, std::ios::in | std::ios::binary);
-        if (!fin.is_open())
-            throw std::runtime_error("Unable to demo protein!");
-
-        std::string proteinStr;
-        fin.seekg(0, std::ios::end);
-        proteinStr.resize((unsigned long)fin.tellg()); //allocate enough space
-        fin.seekg(0, std::ios::beg);
-        fin.read(&proteinStr[0], (long)proteinStr.size()); //read entire file
-        fin.close();
-
-        TrajectoryParser parser(proteinStr, false);
-        trajectories.push_back(parser.parse());
-    }
-
-    return trajectories;
 }
 
 
@@ -285,39 +145,6 @@ std::shared_ptr<Mesh> Viewer::getSkyboxMesh()
 
 
 
-std::shared_ptr<Mesh> Viewer::getBoundingBoxMesh()
-{
-    static std::shared_ptr<Mesh> mesh = nullptr;
-
-    if (mesh)
-        return mesh;
-
-    const std::vector<glm::vec3> VERTICES = {
-        glm::vec3(0, 0, 0),
-        glm::vec3(0, 0, 1),
-        glm::vec3(0, 1, 1),
-        glm::vec3(0, 1, 0),
-        glm::vec3(1, 0, 0),
-        glm::vec3(1, 0, 1),
-        glm::vec3(1, 1, 1),
-        glm::vec3(1, 1, 0)
-    };
-
-    //visible from the inside only, so faces in
-    const std::vector<GLuint> INDICES = {
-        0, 1,       1, 2,       2, 3,       3, 0,   //bottom
-        4, 5,       5, 6,       6, 7,       7, 4,   //top
-        0, 4,       1, 5,       2, 6,       3, 7    //connecting the faces
-    };
-
-    auto vBuffer = std::make_shared<VertexBuffer>(VERTICES);
-    auto iBuffer = std::make_shared<IndexBuffer>(INDICES, GL_LINES);
-    mesh = std::make_shared<Mesh>(vBuffer, iBuffer, GL_LINES);
-    return mesh;
-}
-
-
-
 std::shared_ptr<Camera> Viewer::createCamera()
 {
     auto camera = std::make_shared<Camera>();
@@ -344,9 +171,10 @@ void Viewer::update(int deltaTime)
 void Viewer::animate(int deltaTime)
 {
     bool animationHappened = false;
-    for (auto viewer : slotViewers_)
-        if (viewer->animate(deltaTime)) //test if animation happened
-            animationHappened = true;
+    //TODO
+    //for (auto viewer : slotViewers_)
+    //    if (viewer->animate(deltaTime)) //test if animation happened
+    //        animationHappened = true;
 
     if (animationHappened)
         needsRerendering_ = true; //the atoms moved, so redraw the scene
