@@ -7,8 +7,8 @@
 #include <iostream>
 
 
-const std::size_t SIZE = 8;
-const std::size_t HEIGHT = 8;
+const std::size_t SIZE = 1024;
+const std::size_t HEIGHT = 1024;
 
 
 int main(int argc, char** argv)
@@ -18,6 +18,7 @@ int main(int argc, char** argv)
     for (std::size_t j = 1; j <= HEIGHT; j++)
     {
         std::stringstream ss("");
+        //ss << "test" << j << ".txt";
         ss << "multibrot,d=" << (j / (float)32 + 1) << ".dat";
         files.push_back(ss.str());
     }
@@ -36,6 +37,17 @@ int main(int argc, char** argv)
     while (compress(matrix, boxSize))
         boxSize *= 2;
     std::cout << "done." << std::endl;
+/*
+    for (std::size_t d = 0; d < HEIGHT; d++)
+    {
+        for (std::size_t x = 0; x < SIZE; x++)
+        {
+            for (std::size_t y = 0; y < SIZE; y++)
+                std::cout << matrix[d][x][y] << " ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl << std::endl;
+    }*/
 
     std::cout << "Calculating geometry, ";
     writeGeometry(matrix, std::string("geometry.dat"));
@@ -213,7 +225,7 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
     std::cout << "eliminating boxes of size ";
 
     unsigned int pointCount = 0, lineCount = 0, planeCount = 0, cubeCount = 0;
-    for (short boxSize = 4; boxSize < (short)std::min(SIZE, HEIGHT); boxSize *= 2)
+    for (short boxSize = 4; boxSize <= (short)std::min(SIZE, HEIGHT); boxSize *= 2)
     {
         std::cout << boxSize << " ";
         std::cout.flush();
@@ -222,13 +234,25 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
         while (true) //eliminate all boxes
         {
             startPoint = getPointOf(matrix, boxSize);
+            //std::cout << "(" << startPoint.d_ << "," << startPoint.x_ << "," << startPoint.y_ << ")" << std::endl;
             if (startPoint.d_ < 0 || startPoint.x_ < 0 || startPoint.y_ < 0)
                 break; //box not found
 
             int flag = 0;
 
             Bounds2D bounds = eliminateBoxOf(matrix, startPoint);
-
+/*
+            for (std::size_t d = 0; d < HEIGHT; d++)
+            {
+                for (std::size_t x = 0; x < SIZE; x++)
+                {
+                    for (std::size_t y = 0; y < SIZE; y++)
+                        std::cout << matrix[d][x][y] << " ";
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl << std::endl;
+            }
+*/
             if (boxSize == 1) //dealing with points
             {
                 auto diffD = bounds.second.d_ - bounds.first.d_;
@@ -240,18 +264,18 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
 
                 //smallest, middle, largest
 
-                if (sizes[2] == 0)
-                { //know that sizes[0] == sizes[1] == 0, so clearly a point
+                if (sizes[2] == 1)
+                { //know that sizes[0] == sizes[1] == 1, so clearly a point
                     pointCount++;
                     flag = 1;
                 }
-                else if (sizes[1] == 0)
-                { //know that sizes[2] is the only one > 0
+                else if (sizes[1] == 1)
+                { //know that sizes[2] is the only one > 1
                     lineCount++;
                     flag = 2;
                 }
-                else if (sizes[0] == 0)
-                { //we know that sizes[1] > 0 && sizes[2] > 0, so a plane
+                else if (sizes[1] == 1)
+                { //we know that sizes[1] > 1 && sizes[2] > 1, so a plane
                     planeCount++;
                     flag = 3;
                 }
@@ -260,6 +284,12 @@ void writeGeometry(Matrix3D& matrix, std::string filename)
                     cubeCount++;
                     flag = 4;
                     std::cout << "Actually executed!" << std::endl;
+                    std::cout << flag << " " << bounds.first.d_ <<
+                        " " << bounds.first.x_ <<
+                        " " << bounds.first.y_ <<
+                        " " << bounds.second.d_ <<
+                        " " << bounds.second.x_ <<
+                        " " << bounds.second.y_ << std::endl;
                 }
             }
             else //dealing with squares
@@ -310,14 +340,20 @@ Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
     std::size_t dLength = 0; //number of boxes in the x direction
     while (sD + (dLength + 1) * boxSize < HEIGHT && matrix[sD + (dLength + 1) * boxSize][sX][sY] == boxSize)
         dLength++;
+    if (sD + (dLength + 1) * boxSize == HEIGHT && matrix[sD + (dLength + 1) * boxSize - 1][sX][sY] == boxSize)
+        dLength++;
 
     std::size_t xLength = 0; //number of boxes in the x direction
     while (sX + (xLength + 1) * boxSize < SIZE && matrix[sD][sX + (xLength + 1) * boxSize][sY] == boxSize)
         xLength++;
+    if (sX + (xLength + 1) * boxSize == SIZE && matrix[sD][sX + (xLength + 1) * boxSize - 1][sY] == boxSize)
+        dLength++;
 
     std::size_t yLength = 0; //number of boxes in the x direction
     while (sY + (yLength + 1) * boxSize < SIZE && matrix[sD][sX][sY + (yLength + 1) * boxSize] == boxSize)
         yLength++;
+    if (sY + (yLength + 1) * boxSize == SIZE && matrix[sD][sX][sY + (yLength + 1) * boxSize - 1] == boxSize)
+        dLength++;
 
     //keep track of largest element
     std::size_t maxLength = 0;
@@ -349,14 +385,14 @@ Bounds2D eliminateBoxOf(Matrix3D& matrix, Point3D point)
         yLength = 0;
 
     //max specifies the maximum bounds in only one dimension
-    Point3D max = Point3D((int)(sD + dLength * boxSize),
-                          (int)(sX + xLength * boxSize),
-                          (int)(sY + yLength * boxSize));
+    Point3D max = Point3D((int)(sD + std::max((int)dLength, 1) * boxSize),
+                          (int)(sX + std::max((int)xLength, 1) * boxSize),
+                          (int)(sY + std::max((int)yLength, 1) * boxSize));
 
     //eliminate area inside bounds
-    for (int d = point.d_; d < sD + std::max((int)dLength, 1) * boxSize; d++)
-        for (int x = point.x_; x < sX + std::max((int)xLength, 1) * boxSize; x++)
-            for (int y = point.y_; y < sY + std::max((int)yLength, 1) * boxSize; y++)
+    for (int d = point.d_; d < max.d_; d++)
+        for (int x = point.x_; x < max.x_; x++)
+            for (int y = point.y_; y < max.y_; y++)
                 matrix[(std::size_t)d][(std::size_t)x][(std::size_t)y] = 0;
 
     return std::make_pair(point, max);
