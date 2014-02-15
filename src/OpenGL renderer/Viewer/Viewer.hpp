@@ -1,7 +1,7 @@
 
 /******************************************************************************\
-                     This file is part of Folding Atomata,
-          a program that displays 3D views of Folding@home proteins.
+                     This file is part of Multibrot Renderer,
+          a program that displays 3D views of the Multibrot fractal
 
                       Copyright (c) 2013, Jesse Victors
 

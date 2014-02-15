@@ -1,7 +1,7 @@
 
 /******************************************************************************\
-                     This file is part of Folding Atomata,
-          a program that displays 3D views of Folding@home proteins.
+                     This file is part of Multibrot Renderer,
+          a program that displays 3D views of the Multibrot fractal
 
                       Copyright (c) 2013, Jesse Victors
 
@@ -36,7 +36,7 @@
     use OpenGL calls to hook into GLSL variables, so they require corresponding
     GLSL code to declare and handle those variables accordingly GPU-side.
     Although more modern versions of OpenGL/GLSL use geometry shaders,
-    the ShaderUtilizer declares methods for returning only GLSL for 
+    the ShaderUtilizer declares methods for returning only GLSL for
     vertex and fragment shaders. Subclasses define the implementation of what
     code is returned.
 **/
