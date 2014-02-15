@@ -31,6 +31,8 @@
 #include "Options.hpp"
 #include <thread>
 #include <algorithm>
+#include <iterator>
+#include <sstream>
 #include <iostream>
 
 /*
@@ -86,7 +88,40 @@ void Viewer::reportFPS()
 
 void Viewer::addModels()
 {
-    //TODO
+    //TODO: back face is working?
+
+    auto cubes = std::make_shared<InstancedModel>(getSkyboxMesh());
+
+    std::ifstream file;
+    file.open("geometry.dat", std::ifstream::in);
+    if (file.fail())
+        std::cout << "Unable to open geometry file!" << std::endl;
+
+    std::string line;
+    std::vector<std::vector<int>> geometry;
+    while (getline(file, line))
+    {
+        std::istringstream is(line);
+        geometry.push_back(
+            std::vector<int>(std::istream_iterator<int>(is),
+            std::istream_iterator<int>()
+        ));
+    }
+
+    file.close();
+
+    for (std::size_t j = 0; j < geometry.size(); j++)
+    {
+        //auto matrix = glm::scale(glm::mat4(), glm::vec3(10));
+        auto min = glm::vec3(geometry[j][1], geometry[j][2], geometry[j][3]);
+        auto max = glm::vec3(geometry[j][4], geometry[j][5], geometry[j][6]);
+
+        auto matrix = glm::translate(glm::mat4(), min);
+        matrix      = glm::scale(matrix, (max - min) / glm::vec3(2));
+        cubes->addInstance(matrix);
+    }
+
+    scene_->addModel(cubes); //add to Scene and save
 }
 
 
@@ -170,13 +205,13 @@ void Viewer::update(int deltaTime)
 
 void Viewer::animate(int deltaTime)
 {
-    bool animationHappened = false;
+    //bool animationHappened = false;
     //TODO
     //for (auto viewer : slotViewers_)
     //    if (viewer->animate(deltaTime)) //test if animation happened
     //        animationHappened = true;
 
-    if (animationHappened)
+    //if (animationHappened)
         needsRerendering_ = true; //the atoms moved, so redraw the scene
 }
 
@@ -184,9 +219,11 @@ void Viewer::animate(int deltaTime)
 
 void Viewer::render()
 {
-    if (!needsRerendering_ && !user_->isMoving())
-        return;
-    needsRerendering_ = false; //it was true, so reset it and then render
+    //if (!needsRerendering_ && !user_->isMoving())
+    //    return;
+    //needsRerendering_ = false; //it was true, so reset it and then render
+
+    //TODO: figure out needsRerendering_
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -202,7 +239,7 @@ void Viewer::handleWindowReshape(int newWidth, int newHeight)
 {
     scene_->getCamera()->setAspectRatio(newWidth / (float)newHeight);
     user_->setWindowOffset(glutGet(GLUT_WINDOW_X), glutGet(GLUT_WINDOW_Y));
-    needsRerendering_ = true; //need to redraw after window update
+    //needsRerendering_ = true; //need to redraw after window update
 
     std::cout << "Windows updated to " << newWidth << " by " << newHeight <<
         ", a ratio of " << (newWidth / (float)newHeight) << std::endl;

@@ -32,7 +32,7 @@
 #include <sstream>
 
 static bool readyToUpdate_ = false;
-const int MAX_FPS = 50;
+const int MAX_FPS = 120;
 
 void animateThread()
 {

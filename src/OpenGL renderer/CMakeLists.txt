@@ -98,4 +98,4 @@ add_executable(MultibrotRenderer
     Trajectory/BoundingBox.cpp
 )
 
-target_link_libraries(MultibrotRenderer glut GLEW GL ${GLEW_LIBRARIES} png)
+target_link_libraries(MultibrotRenderer glut GLEW GL ${GLEW_LIBRARIES} png pthread)
