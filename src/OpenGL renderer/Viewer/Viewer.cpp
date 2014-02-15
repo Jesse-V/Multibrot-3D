@@ -35,16 +35,6 @@
 #include <sstream>
 #include <iostream>
 
-/*
-    1) return a vector of all trajectories for all slots
-    2) display only slot 0
-    3) display only snapshot 0
-        draw atoms
-        draw bonds
-    4) then draw multiple snapshots (0, 1, 2, 3, ..., 0, 1, 2, 3, ...)
-
-*/
-
 
 Viewer::Viewer() :
     scene_(std::make_shared<Scene>(createCamera())),
@@ -53,7 +43,7 @@ Viewer::Viewer() :
 {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    glCullFace(GL_FRONT);
 
     addModels();
     user_->grabPointer();
@@ -88,8 +78,6 @@ void Viewer::reportFPS()
 
 void Viewer::addModels()
 {
-    //TODO: back face is working?
-
     auto cubes = std::make_shared<InstancedModel>(getSkyboxMesh());
 
     std::ifstream file;
@@ -112,12 +100,18 @@ void Viewer::addModels()
 
     for (std::size_t j = 0; j < geometry.size(); j++)
     {
-        //auto matrix = glm::scale(glm::mat4(), glm::vec3(10));
-        auto min = glm::vec3(geometry[j][1], geometry[j][2], geometry[j][3]);
-        auto max = glm::vec3(geometry[j][4], geometry[j][5], geometry[j][6]);
+        glm::vec3 min, max;
+
+        if (geometry[j][0] == 4)
+        {
+            min = glm::vec3(geometry[j][1], geometry[j][2], geometry[j][3]);
+            max = glm::vec3(geometry[j][4], geometry[j][5], geometry[j][6]);
+        }
+        else
+            std::cout << "Non-box encountered!" << std::endl;
 
         auto matrix = glm::translate(glm::mat4(), min);
-        matrix      = glm::scale(matrix, (max - min) / glm::vec3(2));
+        matrix      = glm::scale(matrix, (max - min) / glm::vec3(16));
         cubes->addInstance(matrix);
     }
 
@@ -205,25 +199,21 @@ void Viewer::update(int deltaTime)
 
 void Viewer::animate(int deltaTime)
 {
-    //bool animationHappened = false;
-    //TODO
-    //for (auto viewer : slotViewers_)
-    //    if (viewer->animate(deltaTime)) //test if animation happened
-    //        animationHappened = true;
+    bool animationHappened = false;
 
-    //if (animationHappened)
-        needsRerendering_ = true; //the atoms moved, so redraw the scene
+    //TODO: make any animation calls, if any happened set flag to true
+
+    if (animationHappened)
+        needsRerendering_ = true;
 }
 
 
 
 void Viewer::render()
 {
-    //if (!needsRerendering_ && !user_->isMoving())
-    //    return;
-    //needsRerendering_ = false; //it was true, so reset it and then render
-
-    //TODO: figure out needsRerendering_
+    if (!needsRerendering_ && !user_->isMoving())
+        return;
+    needsRerendering_ = false; //it was true, so reset it and then render
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 

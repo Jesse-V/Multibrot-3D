@@ -43,9 +43,9 @@
 class User
 {
     public:
-        const float ACCELERATION = 0.0007f;
-        const float GEOMETRIC_SPEED_DECAY = 0.96f;
-        const float MAX_SPEED = 1.3f;
+        const float ACCELERATION = 0.0018f;
+        const float GEOMETRIC_SPEED_DECAY = 0.97f;
+        const float MAX_SPEED = 3.0f;
         const float MINIMUM_SPEED = 0.0000001f;
 
         const float PITCH_COEFFICIENT = 0.05f;
