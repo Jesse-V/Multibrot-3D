@@ -54,8 +54,10 @@ class Viewer
         Viewer();
         void reportFPS();
         void addModels();
+        void addFractal();
         void addSkybox();
-        std::shared_ptr<Mesh> getSkyboxMesh();
+        std::shared_ptr<Mesh> getInternalFacingCube();
+        std::shared_ptr<Mesh> getExternalFacingCube();
         std::shared_ptr<Camera> createCamera();
 
     private:

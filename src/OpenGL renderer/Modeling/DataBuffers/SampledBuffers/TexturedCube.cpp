@@ -59,8 +59,8 @@ void TexturedCube::store(GLuint programHandle)
     glGenTextures(1, &cubeTexture_);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture_);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     //glActiveTexture(GL_TEXTURE0);
 
     mapTo(GL_TEXTURE_CUBE_MAP_POSITIVE_X, positiveX_);
@@ -73,7 +73,7 @@ void TexturedCube::store(GLuint programHandle)
     textureCoordinates_ = glGetAttribLocation(programHandle, "UV");
     if (textureCoordinates_ == -1)
         throw std::runtime_error("Could not bind UV attribute");
-    //glEnableVertexAttribArray(textureCoordinates_);
+    glEnableVertexAttribArray(textureCoordinates_);
 }
 
 
@@ -87,7 +87,7 @@ void TexturedCube::enable()
 
 void TexturedCube::disable()
 {
-    //glDisableVertexAttribArray(texCoordAttrib_);
+    glDisableVertexAttribArray(textureCoordinates_);
 }
 
 

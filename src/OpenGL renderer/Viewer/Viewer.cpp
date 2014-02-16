@@ -43,7 +43,7 @@ Viewer::Viewer() :
 {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
 
     addModels();
     user_->grabPointer();
@@ -78,7 +78,42 @@ void Viewer::reportFPS()
 
 void Viewer::addModels()
 {
-    auto cubes = std::make_shared<InstancedModel>(getSkyboxMesh());
+    static const float SPREAD = 0.005;
+    static const float HEIGHT = 15;
+    static const int DIMENSIONS = 25;
+
+    auto dirt      = std::make_shared<Image>("images/dirt.png");
+    auto grassSide = std::make_shared<Image>("images/grass_side.png");
+    auto grassTop  = std::make_shared<Image>("images/grass_top.png");
+    BufferList list = { std::make_shared<TexturedCube>(grassSide, grassSide,
+        grassSide, grassSide, grassTop, dirt) };
+    auto blocks = std::make_shared<InstancedModel>(
+                    getExternalFacingCube(), list);
+
+    for (int x = -DIMENSIONS; x < DIMENSIONS; x++)
+    {
+        for (int y = -DIMENSIONS; y < DIMENSIONS; y++)
+        {
+            float dSq = x * x + y * y;
+            float z = HEIGHT / pow(2.718282f, SPREAD * dSq);
+            z = (int)z;
+
+            auto matrix = glm::translate(glm::mat4(), glm::vec3(x, y, -z));
+            matrix      = glm::scale(matrix, glm::vec3(0.5f));
+            blocks->addInstance(matrix);
+        }
+    }
+
+    scene_->addModel(blocks); //add to Scene and save
+
+    //addFractal();
+}
+
+
+
+void Viewer::addFractal()
+{
+    auto cubes = std::make_shared<InstancedModel>(getExternalFacingCube());
 
     std::ifstream file;
     file.open("geometry.dat", std::ifstream::in);
@@ -130,7 +165,8 @@ void Viewer::addSkybox()
     BufferList list = { std::make_shared<TexturedCube>(image, image,
         image, image, image, image) };
     auto matrix = glm::scale(glm::mat4(), glm::vec3(4096));
-    auto model = std::make_shared<InstancedModel>(getSkyboxMesh(), matrix, list);
+    auto model = std::make_shared<InstancedModel>(
+                                getInternalFacingCube(), matrix, list);
     scene_->addModel(model); //add to Scene and save
 
     std::cout << "... done creating skybox." << std::endl;
@@ -138,7 +174,7 @@ void Viewer::addSkybox()
 
 
 
-std::shared_ptr<Mesh> Viewer::getSkyboxMesh()
+std::shared_ptr<Mesh> Viewer::getInternalFacingCube()
 {
     static std::shared_ptr<Mesh> mesh = nullptr;
 
@@ -174,10 +210,46 @@ std::shared_ptr<Mesh> Viewer::getSkyboxMesh()
 
 
 
+std::shared_ptr<Mesh> Viewer::getExternalFacingCube()
+{
+    static std::shared_ptr<Mesh> mesh = nullptr;
+
+    if (mesh)
+        return mesh;
+
+    const std::vector<glm::vec3> VERTICES = {
+        glm::vec3(-1, -1, -1),
+        glm::vec3(-1, -1,  1),
+        glm::vec3(-1,  1, -1),
+        glm::vec3(-1,  1,  1),
+        glm::vec3( 1, -1, -1),
+        glm::vec3( 1, -1,  1),
+        glm::vec3( 1,  1, -1),
+        glm::vec3( 1,  1,  1)
+    };
+
+    //visible from the inside only, so faces in
+    const std::vector<GLuint> INDICES = {
+        4, 5, 1, 0, //front
+        2, 3, 7, 6, //back
+        6, 4, 0, 2, //top
+        3, 1, 5, 7, //bottom
+        0, 1, 3, 2, //left
+        6, 7, 5, 4, //right
+    };
+
+    auto vBuffer = std::make_shared<VertexBuffer>(VERTICES);
+    auto iBuffer = std::make_shared<IndexBuffer>(INDICES, GL_QUADS);
+    mesh = std::make_shared<Mesh>(vBuffer, iBuffer, GL_QUADS);
+    return mesh;
+}
+
+
+
 std::shared_ptr<Camera> Viewer::createCamera()
 {
     auto camera = std::make_shared<Camera>();
-    camera->setPosition(glm::vec3(0, -50, 0));
+    camera->setPosition(glm::vec3(0, -5, 0));
 
     camera->lookAt(
         glm::vec3(0, 0, 0),
