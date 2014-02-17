@@ -42,8 +42,8 @@ Viewer::Viewer() :
     timeSpentRendering_(0), frameCount_(0), needsRerendering_(true)
 {
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
 
     addModels();
     user_->grabPointer();
@@ -78,9 +78,16 @@ void Viewer::reportFPS()
 
 void Viewer::addModels()
 {
-    static const float SPREAD = 0.005;
-    static const float HEIGHT = 15;
-    static const int DIMENSIONS = 25;
+    addBellCurveBlocks();
+    addFractal();
+}
+
+
+
+void Viewer::addBellCurveBlocks()
+{
+    static const float SPREAD = 0.005, HEIGHT = 15;
+    static const int RES = 25;
 
     auto dirt      = std::make_shared<Image>("images/dirt.png");
     auto grassTop  = std::make_shared<Image>("images/grass_top.png");
@@ -96,29 +103,31 @@ void Viewer::addModels()
     auto blocks = std::make_shared<InstancedModel>(
                     getExternalFacingCube(), list);
 
-    for (int x = -DIMENSIONS; x < DIMENSIONS; x++)
+    for (int x = -RES; x < RES; x++)
     {
-        for (int y = -DIMENSIONS; y < DIMENSIONS; y++)
+        for (int y = -RES; y < RES; y++)
         {
             float dSq = x * x + y * y;
             float z = HEIGHT / pow(2.718282f, SPREAD * dSq);
             z = (int)z;
 
-            auto matrix = glm::translate(glm::mat4(), glm::vec3(x, y, -z));
-            matrix      = glm::scale(matrix, glm::vec3(0.5f));
+            auto loc = glm::vec3(x + RES, y + RES, -z) + glm::vec3(0.5f);
+            auto matrix = glm::translate(glm::mat4(), loc);
             blocks->addInstance(matrix);
         }
     }
 
     scene_->addModel(blocks); //add to Scene and save
-
-    //addFractal();
 }
 
 
 
 void Viewer::addFractal()
 {
+    static const auto SCALE = glm::vec3(1 / 64.0f);
+    static const auto OFFSET = glm::vec3(25, 25, -4) / SCALE;
+    static const auto BOX_SCALE = glm::vec3(1 / 6.0f);
+
     auto cubes = std::make_shared<InstancedModel>(getExternalFacingCube());
 
     std::ifstream file;
@@ -139,6 +148,8 @@ void Viewer::addFractal()
 
     file.close();
 
+    std::cout << "Read " << geometry.size() << " objects from file." << std::endl;
+
     for (std::size_t j = 0; j < geometry.size(); j++)
     {
         glm::vec3 min, max;
@@ -151,8 +162,10 @@ void Viewer::addFractal()
         else
             std::cout << "Non-box encountered!" << std::endl;
 
-        auto matrix = glm::translate(glm::mat4(), min);
-        matrix      = glm::scale(matrix, (max - min) / glm::vec3(16));
+        auto matrix = glm::scale(glm::mat4(), SCALE);
+        matrix      = glm::translate(matrix, min - glm::vec3(512) + OFFSET);
+        matrix      = glm::scale(matrix, (max - min) * BOX_SCALE);
+        matrix      = glm::translate(matrix, glm::vec3(0.5f));
         cubes->addInstance(matrix);
     }
 
@@ -188,14 +201,14 @@ std::shared_ptr<Mesh> Viewer::getInternalFacingCube()
         return mesh;
 
     const std::vector<glm::vec3> VERTICES = {
-        glm::vec3(-1, -1, -1),
-        glm::vec3(-1, -1,  1),
-        glm::vec3(-1,  1, -1),
-        glm::vec3(-1,  1,  1),
-        glm::vec3( 1, -1, -1),
-        glm::vec3( 1, -1,  1),
-        glm::vec3( 1,  1, -1),
-        glm::vec3( 1,  1,  1)
+        glm::vec3(-0.5, -0.5, -0.5),
+        glm::vec3(-0.5, -0.5,  0.5),
+        glm::vec3(-0.5,  0.5, -0.5),
+        glm::vec3(-0.5,  0.5,  0.5),
+        glm::vec3( 0.5, -0.5, -0.5),
+        glm::vec3( 0.5, -0.5,  0.5),
+        glm::vec3( 0.5,  0.5, -0.5),
+        glm::vec3( 0.5,  0.5,  0.5)
     };
 
     //visible from the inside only, so faces in
@@ -224,14 +237,14 @@ std::shared_ptr<Mesh> Viewer::getExternalFacingCube()
         return mesh;
 
     const std::vector<glm::vec3> VERTICES = {
-        glm::vec3(-1, -1, -1),
-        glm::vec3(-1, -1,  1),
-        glm::vec3(-1,  1, -1),
-        glm::vec3(-1,  1,  1),
-        glm::vec3( 1, -1, -1),
-        glm::vec3( 1, -1,  1),
-        glm::vec3( 1,  1, -1),
-        glm::vec3( 1,  1,  1)
+        glm::vec3(-0.5, -0.5, -0.5),
+        glm::vec3(-0.5, -0.5,  0.5),
+        glm::vec3(-0.5,  0.5, -0.5),
+        glm::vec3(-0.5,  0.5,  0.5),
+        glm::vec3( 0.5, -0.5, -0.5),
+        glm::vec3( 0.5, -0.5,  0.5),
+        glm::vec3( 0.5,  0.5, -0.5),
+        glm::vec3( 0.5,  0.5,  0.5)
     };
 
     //visible from the inside only, so faces in

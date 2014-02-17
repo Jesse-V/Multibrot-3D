@@ -54,6 +54,7 @@ class Viewer
         Viewer();
         void reportFPS();
         void addModels();
+        void addBellCurveBlocks();
         void addFractal();
         void addSkybox();
         std::shared_ptr<Mesh> getInternalFacingCube();
