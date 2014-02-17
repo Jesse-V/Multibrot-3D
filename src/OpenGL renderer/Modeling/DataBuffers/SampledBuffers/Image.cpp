@@ -30,8 +30,8 @@
 #include <iostream>
 
 
-Image::Image(const std::string& imagePath, bool flipX, bool flipY) :
-    flipX_(flipX), flipY_(flipY)
+Image::Image(const std::string& imagePath, bool flipX, bool flipY, bool rotate90) :
+    flipX_(flipX), flipY_(flipY), rotate90_(rotate90)
 {
     std::cout << "Loading image from " << imagePath << " ...";
 
@@ -106,6 +106,13 @@ void Image::loadPNG(const std::string& imagePath)
         int y = (i / 3) / width_;
         if (flipY_)
             y = width_ - y - 1;
+
+        if (rotate90_)
+        {
+            auto temp = x;
+            x = y;
+            y = temp;
+        }
 
         auto pix = pixbuf.get_pixel((std::size_t)x, (std::size_t)y);
 

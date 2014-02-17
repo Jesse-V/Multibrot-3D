@@ -83,10 +83,16 @@ void Viewer::addModels()
     static const int DIMENSIONS = 25;
 
     auto dirt      = std::make_shared<Image>("images/dirt.png");
-    auto grassSide = std::make_shared<Image>("images/grass_side.png");
     auto grassTop  = std::make_shared<Image>("images/grass_top.png");
-    BufferList list = { std::make_shared<TexturedCube>(grassSide, grassSide,
-        grassSide, grassSide, grassTop, dirt) };
+
+    auto side1 = std::make_shared<Image>("images/grass_side.png", false, false, true);
+    auto side2 = std::make_shared<Image>("images/grass_side.png", true, false, true);
+    auto side3 = std::make_shared<Image>("images/grass_side.png", false, true);
+    auto side4 = std::make_shared<Image>("images/grass_side.png");
+
+    BufferList list = { std::make_shared<TexturedCube>(side1, side2,
+        side3, side4, grassTop, dirt) };
+
     auto blocks = std::make_shared<InstancedModel>(
                     getExternalFacingCube(), list);
 
