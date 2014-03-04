@@ -28,6 +28,7 @@
 #include "Viewer.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
+#include "Modeling/DataBuffers/ColorBuffer.hpp"
 #include "Options.hpp"
 #include <thread>
 #include <algorithm>
@@ -125,13 +126,47 @@ void Viewer::addBellCurveBlocks()
 void Viewer::addFractal()
 {
     static const auto SCALE = glm::vec3(1 / 64.0f);
-    static const auto OFFSET = glm::vec3(25, 25, -4) / SCALE;
-    static const auto BOX_SCALE = glm::vec3(1 / 6.0f);
+    static const auto OFFSET = glm::vec3(25, 25, -4) / SCALE - glm::vec3(0.02f);
+    static const auto BOX_SCALE = glm::vec3(0.99f);
 
-    auto cubes = std::make_shared<InstancedModel>(getExternalFacingCube());
+    auto geometry = readGeometry("geometry.dat");
+    auto boxModels = getBoxModels();
 
+    long count = 0;
+    for (auto rectangle : geometry)
+    {
+        glm::vec3 min = glm::vec3(rectangle[1], rectangle[2], rectangle[3]);
+        glm::vec3 max = glm::vec3(rectangle[4], rectangle[5], rectangle[6]);
+        glm::vec3 size = max - min;
+        float minDimSize = std::min(size.x, std::min(size.y, size.z));
+
+        for (auto model : boxModels)
+        {
+            if ((int)minDimSize == model.first)
+            {
+                auto matrix = glm::scale(glm::mat4(), SCALE);
+                matrix      = glm::translate(matrix, min - glm::vec3(512) + OFFSET);
+                matrix      = glm::scale(matrix, (max - min) * BOX_SCALE);
+                matrix      = glm::translate(matrix, glm::vec3(0.5f));
+                model.second->addInstance(matrix);
+                count++;
+                break;
+            }
+        }
+    }
+
+    std::cout << "Instance count: " << count << std::endl;
+
+    for (auto model : boxModels)
+        scene_->addModel(model.second); //add to Scene and save
+}
+
+
+
+std::vector<std::vector<int>> Viewer::readGeometry(const std::string& filename)
+{
     std::ifstream file;
-    file.open("geometry.dat", std::ifstream::in);
+    file.open(filename, std::ifstream::in);
     if (file.fail())
         std::cout << "Unable to open geometry file!" << std::endl;
 
@@ -150,26 +185,32 @@ void Viewer::addFractal()
 
     std::cout << "Read " << geometry.size() << " objects from file." << std::endl;
 
-    for (std::size_t j = 0; j < geometry.size(); j++)
+    return geometry;
+}
+
+
+
+std::vector<ColoredCube> Viewer::getBoxModels()
+{
+    std::vector<std::pair<int, glm::vec3>> boxColors;
+    boxColors.push_back(std::make_pair(128, glm::vec3(1, 0, 0)));
+    boxColors.push_back(std::make_pair(64, glm::vec3(0, 1, 0)));
+    boxColors.push_back(std::make_pair(32, glm::vec3(0, 0, 1)));
+    boxColors.push_back(std::make_pair(16, glm::vec3(0, 0.5, 1)));
+    boxColors.push_back(std::make_pair(8, glm::vec3(0, 1, 0.5)));
+    boxColors.push_back(std::make_pair(4, glm::vec3(0.05, 0.05, 0.05)));
+    boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));
+
+    auto mesh = getExternalFacingCube();
+    std::vector<ColoredCube> cubes;
+    for (auto box : boxColors)
     {
-        glm::vec3 min, max;
-
-        if (geometry[j][0] == 4)
-        {
-            min = glm::vec3(geometry[j][1], geometry[j][2], geometry[j][3]);
-            max = glm::vec3(geometry[j][4], geometry[j][5], geometry[j][6]);
-        }
-        else
-            std::cout << "Non-box encountered!" << std::endl;
-
-        auto matrix = glm::scale(glm::mat4(), SCALE);
-        matrix      = glm::translate(matrix, min - glm::vec3(512) + OFFSET);
-        matrix      = glm::scale(matrix, (max - min) * BOX_SCALE);
-        matrix      = glm::translate(matrix, glm::vec3(0.5f));
-        cubes->addInstance(matrix);
+        BufferList list = { std::make_shared<ColorBuffer>(box.second, 8) };
+        auto model = std::make_shared<InstancedModel>(mesh, list);
+        cubes.push_back(std::make_pair(box.first, model));
     }
 
-    scene_->addModel(cubes); //add to Scene and save
+    return cubes;
 }
 
 

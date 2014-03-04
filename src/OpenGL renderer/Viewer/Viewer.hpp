@@ -40,6 +40,8 @@
 #include "World/Scene.hpp"
 #include <memory>
 
+typedef std::pair<int, std::shared_ptr<InstancedModel>> ColoredCube;
+
 class Viewer
 {
     public:
@@ -57,6 +59,8 @@ class Viewer
         void addBellCurveBlocks();
         void addFractal();
         void addSkybox();
+        std::vector<std::vector<int>> readGeometry(const std::string& filename);
+        std::vector<ColoredCube> getBoxModels();
         std::shared_ptr<Mesh> getInternalFacingCube();
         std::shared_ptr<Mesh> getExternalFacingCube();
         std::shared_ptr<Camera> createCamera();
