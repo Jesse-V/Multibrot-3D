@@ -126,8 +126,8 @@ void Viewer::addBellCurveBlocks()
 void Viewer::addFractal()
 {
     static const auto SCALE = glm::vec3(1 / 64.0f);
-    static const auto OFFSET = glm::vec3(25, 25, -4) / SCALE - glm::vec3(0.02f);
-    static const auto BOX_SCALE = glm::vec3(0.99f);
+    static const auto OFFSET = glm::vec3(25, 25, -4) / SCALE;
+    static const auto BOX_SCALE = glm::vec3(1.0f);
 
     auto geometry = readGeometry("geometry.dat");
     auto boxModels = getBoxModels();
@@ -193,10 +193,10 @@ std::vector<std::vector<int>> Viewer::readGeometry(const std::string& filename)
 std::vector<ColoredCube> Viewer::getBoxModels()
 {
     std::vector<std::pair<int, glm::vec3>> boxColors;
-    boxColors.push_back(std::make_pair(128, glm::vec3(1, 0, 0)));
-    boxColors.push_back(std::make_pair(64, glm::vec3(0, 1, 0)));
-    boxColors.push_back(std::make_pair(32, glm::vec3(0, 0, 1)));
-    boxColors.push_back(std::make_pair(16, glm::vec3(0, 0.5, 1)));
+    //boxColors.push_back(std::make_pair(128, glm::vec3(1, 0, 0)));
+    //boxColors.push_back(std::make_pair(64, glm::vec3(0, 1, 0)));
+    //boxColors.push_back(std::make_pair(32, glm::vec3(0, 0, 1)));
+    //boxColors.push_back(std::make_pair(16, glm::vec3(0, 0.5, 1)));
     boxColors.push_back(std::make_pair(8, glm::vec3(0, 1, 0.5)));
     boxColors.push_back(std::make_pair(4, glm::vec3(0.05, 0.05, 0.05)));
     boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));
@@ -205,7 +205,17 @@ std::vector<ColoredCube> Viewer::getBoxModels()
     std::vector<ColoredCube> cubes;
     for (auto box : boxColors)
     {
-        BufferList list = { std::make_shared<ColorBuffer>(box.second, 8) };
+        std::vector<glm::vec3> colors {
+            box.second / 1.0f,
+            box.second / 4.0f,
+            box.second / 2.0f,
+            box.second / 4.0f,
+            box.second / 4.0f,
+            box.second / 2.0f,
+            box.second / 4.0f,
+            box.second / 1.0f
+        };
+        BufferList list = { std::make_shared<ColorBuffer>(colors) };
         auto model = std::make_shared<InstancedModel>(mesh, list);
         cubes.push_back(std::make_pair(box.first, model));
     }
