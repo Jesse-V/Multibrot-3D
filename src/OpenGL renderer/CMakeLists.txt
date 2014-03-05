@@ -70,7 +70,6 @@ include_directories(. libs)
 #organized by importance
 add_executable(MultibrotRenderer
     main.cpp
-    Options.cpp
 
     Viewer/Viewer.cpp
     Viewer/User.cpp
@@ -78,8 +77,6 @@ add_executable(MultibrotRenderer
     World/Scene.cpp
     World/Camera.cpp
     World/Light.cpp
-
-    PyON/StringManip.cpp
 
     Modeling/InstancedModel.cpp
     Modeling/Mesh/Mesh.cpp

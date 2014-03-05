@@ -26,7 +26,6 @@
 #define _GLIBCXX_USE_NANOSLEEP
 
 #include "main.hpp"
-#include "Options.hpp"
 #include "Viewer/Viewer.hpp"
 #include <thread>
 #include <sstream>
@@ -36,7 +35,7 @@ const int MAX_FPS = 120;
 
 void animateThread()
 {
-    const int ANIMATE_DELAY = Options::getInstance().getAnimationDelay();
+    const int ANIMATE_DELAY = 40;
     try
     {
         while (!readyToUpdate_)
@@ -312,8 +311,6 @@ void assignCallbacks()
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
-    if (!Options::handleFlags(argc, argv))
-        return EXIT_SUCCESS;
 
     initializeGlutWindow(
         glutGet(GLUT_SCREEN_WIDTH),
@@ -330,18 +327,10 @@ int main(int argc, char** argv)
 
         std::cout << "Finished Glut and window initialization." << std::endl;
 
-        if (!Options::getInstance().highVerbosity())
-        { //https://bbs.archlinux.org/viewtopic.php?id=79378
-          //https://groups.google.com/forum/#!topic/comp.lang.c++.moderated/ggl_2Ii3aVM
-          //http://www.velocityreviews.com/forums/showpost.php?p=1501892&postcount=2
-            std::ofstream nullOut("/dev/null");
-            std::cout.rdbuf(nullOut.rdbuf());
-        }
-
         std::thread updater(updateThread);
-        std::thread animater(animateThread);
+        //std::thread animater(animateThread);
         updater.detach();
-        animater.detach();
+        //animater.detach();
 
         std::cout << "Threads launched. FPS cap set at " << MAX_FPS << std::endl;
         glutMainLoop();

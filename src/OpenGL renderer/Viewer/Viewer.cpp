@@ -29,7 +29,6 @@
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
 #include "Modeling/DataBuffers/ColorBuffer.hpp"
-#include "Options.hpp"
 #include <thread>
 #include <algorithm>
 #include <iterator>
@@ -93,10 +92,11 @@ void Viewer::addBellCurveBlocks()
     auto dirt      = std::make_shared<Image>("images/dirt.png");
     auto grassTop  = std::make_shared<Image>("images/grass_top.png");
 
-    auto side1 = std::make_shared<Image>("images/grass_side.png", false, false, true);
-    auto side2 = std::make_shared<Image>("images/grass_side.png", true, false, true);
-    auto side3 = std::make_shared<Image>("images/grass_side.png", false, true);
-    auto side4 = std::make_shared<Image>("images/grass_side.png");
+    std::string sideFile = "images/grass_side.png";
+    auto side1 = std::make_shared<Image>(sideFile, false, false, true);
+    auto side2 = std::make_shared<Image>(sideFile, true, false, true);
+    auto side3 = std::make_shared<Image>(sideFile, false, true);
+    auto side4 = std::make_shared<Image>(sideFile);
 
     BufferList list = { std::make_shared<TexturedCube>(side1, side2,
         side3, side4, grassTop, dirt) };
@@ -247,7 +247,7 @@ void Viewer::addSkybox()
     std::cout << "Creating skybox..." << std::endl;
 
     auto image = std::make_shared<Image>(
-        Options::getInstance().getSkyboxPath());
+        "/usr/share/FoldingAtomata/images/gradient.png");
 
     BufferList list = { std::make_shared<TexturedCube>(image, image,
         image, image, image, image) };
