@@ -193,13 +193,21 @@ std::vector<std::vector<int>> Viewer::readGeometry(const std::string& filename)
 std::vector<ColoredCube> Viewer::getBoxModels()
 {
     std::vector<std::pair<int, glm::vec3>> boxColors;
-    //boxColors.push_back(std::make_pair(128, glm::vec3(1, 0, 0)));
-    //boxColors.push_back(std::make_pair(64, glm::vec3(0, 1, 0)));
-    //boxColors.push_back(std::make_pair(32, glm::vec3(0, 0, 1)));
-    //boxColors.push_back(std::make_pair(16, glm::vec3(0, 0.5, 1)));
+    boxColors.push_back(std::make_pair(128, glm::vec3(1, 0, 0)));
+    boxColors.push_back(std::make_pair(64, glm::vec3(0, 1, 0)));
+    boxColors.push_back(std::make_pair(32, glm::vec3(0, 0, 1)));
+    boxColors.push_back(std::make_pair(16, glm::vec3(0, 0.5, 1)));
     boxColors.push_back(std::make_pair(8, glm::vec3(0, 1, 0.5)));
     boxColors.push_back(std::make_pair(4, glm::vec3(0.05, 0.05, 0.05)));
     boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));
+    /*boxColors.push_back(std::make_pair(256, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(128, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(64, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(32, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(16, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(8, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(4, glm::vec3(1, 1, 1)));
+    boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));*/
 
     auto mesh = getExternalFacingCube();
     std::vector<ColoredCube> cubes;
@@ -207,13 +215,22 @@ std::vector<ColoredCube> Viewer::getBoxModels()
     {
         std::vector<glm::vec3> colors {
             box.second / 1.0f,
-            box.second / 4.0f,
-            box.second / 2.0f,
-            box.second / 4.0f,
-            box.second / 4.0f,
-            box.second / 2.0f,
-            box.second / 4.0f,
+            box.second / 3.0f,
+            box.second / 1.5f,
+            box.second / 3.0f,
+            box.second / 3.0f,
+            box.second / 1.5f,
+            box.second / 3.0f,
             box.second / 1.0f
+            /*
+            box.second / 1.0f,
+            box.second / 4.0f,
+            box.second / 2.0f,
+            box.second / 4.0f,
+            box.second / 4.0f,
+            box.second / 2.0f,
+            box.second / 4.0f,
+            box.second / 1.0f*/
         };
         BufferList list = { std::make_shared<ColorBuffer>(colors) };
         auto model = std::make_shared<InstancedModel>(mesh, list);
