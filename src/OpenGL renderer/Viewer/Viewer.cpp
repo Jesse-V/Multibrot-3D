@@ -208,6 +208,7 @@ std::vector<ColoredCube> Viewer::getBoxModels()
     boxColors.push_back(std::make_pair(8, glm::vec3(0, 1, 0.5)));
     boxColors.push_back(std::make_pair(4, glm::vec3(0.05, 0.05, 0.05)));
     boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));
+
     /*boxColors.push_back(std::make_pair(256, glm::vec3(1, 1, 1)));
     boxColors.push_back(std::make_pair(128, glm::vec3(1, 1, 1)));
     boxColors.push_back(std::make_pair(64, glm::vec3(1, 1, 1)));
@@ -240,8 +241,8 @@ std::vector<ColoredCube> Viewer::getBoxModels()
             box.second / 4.0f,
             box.second / 1.0f*/
         };
-        BufferList list = { std::make_shared<ColorBuffer>(colors) };
-        auto model = std::make_shared<UnifiedInstancedModel>(mesh, list);
+        BufferList list = { std::make_shared<ColorBuffer>(box.second, 6000) }; //(colors)
+        auto model = std::make_shared<ModelType>(mesh, list);
         cubes.push_back(std::make_pair(box.first, model));
     }
 

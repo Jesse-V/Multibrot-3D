@@ -41,7 +41,9 @@
 #include "Modeling/UnifiedInstancedModel.hpp"
 #include <memory>
 
-typedef std::pair<int, std::shared_ptr<UnifiedInstancedModel>> ColoredCube;
+typedef UnifiedInstancedModel ModelType;
+typedef std::pair<int, std::shared_ptr<ModelType>> ColoredCube;
+//TODO: change to InstancedModel
 
 class Viewer
 {

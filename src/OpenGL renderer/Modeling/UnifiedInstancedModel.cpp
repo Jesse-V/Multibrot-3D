@@ -27,6 +27,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <stdexcept>
+#include <iostream>
 
 
 UnifiedInstancedModel::UnifiedInstancedModel(const std::shared_ptr<Mesh>& mesh) :
@@ -64,12 +65,44 @@ UnifiedInstancedModel::UnifiedInstancedModel(const std::shared_ptr<Mesh>& mesh,
 
 
 
+void UnifiedInstancedModel::addInstance(const glm::mat4& instanceModelMatrix)
+{
+    if (unified_)
+        throw std::logic_error("Can't addInstance, already unified!");
+    else
+        InstancedModel::addInstance(instanceModelMatrix);
+}
+
+
+
 void UnifiedInstancedModel::saveAs(GLuint programHandle)
 {
-    //TODO: combine mesh with instances
+    auto vertices   = mesh_->getVertexBuffer()->getVertices();
+    auto indexes    = mesh_->getIndexBuffer()->getIndices();
+    auto renderMode = mesh_->getRenderingMode();
+
+    std::vector<glm::vec3> newVertices;
+    std::vector<GLuint> newIndices;
+
+    for (std::size_t instance = 0; instance < modelMatrices_.size(); instance++)
+    {
+        auto modelMatrix = modelMatrices_[instance];
+
+        for (auto vertex : vertices)
+            newVertices.push_back((modelMatrix * glm::vec4(vertex, 1)).xyz());
+
+        for (auto index : indexes)
+            newIndices.push_back(index + instance * vertices.size());
+    }
+
+    auto vBuffer = std::make_shared<VertexBuffer>(newVertices);
+    auto iBuffer = std::make_shared<IndexBuffer>(newIndices, renderMode);
+    mesh_ = std::make_shared<Mesh>(vBuffer, iBuffer, renderMode);
+
+    modelMatrices_.clear();
+    modelMatrices_.push_back(glm::mat4());
 
     unified_ = true;
-
     InstancedModel::saveAs(programHandle);
 }
 
@@ -86,9 +119,8 @@ void UnifiedInstancedModel::render(GLuint programHandle)
     if (isVisible_)
     {
         enableDataBuffers();
-
-        //TODO: how to handle model matrix?
-        glUniformMatrix4fv(matrixModelLocation_, 1, GL_FALSE, glm::value_ptr(modelMatrices_[0]));
+        glUniformMatrix4fv(matrixModelLocation_, 1, GL_FALSE,
+            glm::value_ptr(modelMatrices_[0]));
         mesh_->draw();
     }
 }
@@ -98,7 +130,7 @@ void UnifiedInstancedModel::render(GLuint programHandle)
 void UnifiedInstancedModel::setModelMatrix(std::size_t index, const glm::mat4& matrix)
 {
     if (unified_)
-        throw std::logic_error("Already unified!");
+        throw std::logic_error("Can't set modelMatrix, already unified!");
     else
         InstancedModel::setModelMatrix(index, matrix);
 }

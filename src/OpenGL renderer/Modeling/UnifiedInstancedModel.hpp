@@ -26,6 +26,7 @@
 #ifndef UNIFIED_INSTANCED_MODEL
 #define UNIFIED_INSTANCED_MODEL
 
+#define GLM_SWIZZLE //needed for .xyz(), just like in Camera class
 #include "InstancedModel.hpp"
 
 class UnifiedInstancedModel : public InstancedModel
@@ -47,6 +48,7 @@ class UnifiedInstancedModel : public InstancedModel
         void saveAs(GLuint programHandle);
         void render(GLuint programHandle);
         void setModelMatrix(std::size_t index, const glm::mat4& matrix);
+        void addInstance(const glm::mat4& instanceModelMatrix);
 
     private:
         bool unified_ = false;

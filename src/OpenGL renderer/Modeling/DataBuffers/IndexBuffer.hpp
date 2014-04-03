@@ -50,6 +50,7 @@ class IndexBuffer : public DataBuffer
         std::vector<Triangle> reinterpretAsTriangles();
         std::vector<Quad> reinterpretAsQuads();
         std::vector<Triangle> castToTriangles();
+        std::vector<GLuint> getIndices();
 
         virtual void store(GLuint programHandle);
         virtual void enable();

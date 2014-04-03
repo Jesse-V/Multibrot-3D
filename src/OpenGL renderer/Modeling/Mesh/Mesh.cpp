@@ -102,6 +102,13 @@ std::vector<Triangle> Mesh::getTriangles()
 
 
 
+GLenum Mesh::getRenderingMode()
+{
+    return renderingMode_;
+}
+
+
+
 std::shared_ptr<VertexBuffer> Mesh::getVertexBuffer()
 {
     return vertexBuffer_;

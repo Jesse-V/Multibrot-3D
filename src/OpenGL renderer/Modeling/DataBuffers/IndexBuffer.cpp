@@ -134,6 +134,13 @@ std::vector<Triangle> IndexBuffer::castToTriangles()
 
 
 
+std::vector<GLuint> IndexBuffer::getIndices()
+{
+    return indices_;
+}
+
+
+
 void IndexBuffer::enable()
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
