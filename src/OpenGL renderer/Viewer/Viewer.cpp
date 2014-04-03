@@ -28,6 +28,7 @@
 #include "Viewer.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
+#include "Modeling/DataBuffers/SampledBuffers/TexturedPlane.hpp"
 #include "Modeling/DataBuffers/ColorBuffer.hpp"
 #include <thread>
 #include <algorithm>
@@ -42,8 +43,8 @@ Viewer::Viewer() :
     timeSpentRendering_(0), frameCount_(0), needsRerendering_(true)
 {
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     addModels();
     user_->grabPointer();
@@ -80,13 +81,20 @@ void Viewer::addModels()
 {
     addBellCurveBlocks();
     addFractal();
+
+/*
+    auto grassTop  = std::make_shared<Image>("images/grass_top.png");
+    BufferList list = { std::make_shared<TexturedPlane>(grassTop) };
+    auto plane = std::make_shared<InstancedModel>(TexturedPlane::getMesh(), list);
+    plane->addInstance(glm::scale(glm::mat4(), glm::vec3(1.0f)));
+    scene_->addModel(plane);*/
 }
 
 
 
 void Viewer::addBellCurveBlocks()
 {
-    static const float SPREAD = 0.005, HEIGHT = 15;
+    static const float SPREAD = 0.005f, HEIGHT = 15.0f;
     static const int RES = 25;
 
     auto dirt      = std::make_shared<Image>("images/dirt.png");
@@ -102,14 +110,14 @@ void Viewer::addBellCurveBlocks()
         side3, side4, grassTop, dirt) };
 
     auto blocks = std::make_shared<InstancedModel>(
-                    getExternalFacingCube(), list);
+                    TexturedCube::getExternalFacingMesh(), list);
 
     for (int x = -RES; x < RES; x++)
     {
         for (int y = -RES; y < RES; y++)
         {
             float dSq = x * x + y * y;
-            float z = HEIGHT / pow(2.718282f, SPREAD * dSq);
+            float z = HEIGHT / (float)pow(2.718282f, SPREAD * dSq);
             z = (int)z;
 
             auto loc = glm::vec3(x + RES, y + RES, -z) + glm::vec3(0.5f);
@@ -209,7 +217,7 @@ std::vector<ColoredCube> Viewer::getBoxModels()
     boxColors.push_back(std::make_pair(4, glm::vec3(1, 1, 1)));
     boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));*/
 
-    auto mesh = getExternalFacingCube();
+    auto mesh = TexturedCube::getExternalFacingMesh();
     std::vector<ColoredCube> cubes;
     for (auto box : boxColors)
     {
@@ -233,7 +241,7 @@ std::vector<ColoredCube> Viewer::getBoxModels()
             box.second / 1.0f*/
         };
         BufferList list = { std::make_shared<ColorBuffer>(colors) };
-        auto model = std::make_shared<InstancedModel>(mesh, list);
+        auto model = std::make_shared<UnifiedInstancedModel>(mesh, list);
         cubes.push_back(std::make_pair(box.first, model));
     }
 
@@ -253,82 +261,10 @@ void Viewer::addSkybox()
         image, image, image, image) };
     auto matrix = glm::scale(glm::mat4(), glm::vec3(4096));
     auto model = std::make_shared<InstancedModel>(
-                                getInternalFacingCube(), matrix, list);
+                                TexturedCube::getInternalFacingMesh(), matrix, list);
     scene_->addModel(model); //add to Scene and save
 
     std::cout << "... done creating skybox." << std::endl;
-}
-
-
-
-std::shared_ptr<Mesh> Viewer::getInternalFacingCube()
-{
-    static std::shared_ptr<Mesh> mesh = nullptr;
-
-    if (mesh)
-        return mesh;
-
-    const std::vector<glm::vec3> VERTICES = {
-        glm::vec3(-0.5, -0.5, -0.5),
-        glm::vec3(-0.5, -0.5,  0.5),
-        glm::vec3(-0.5,  0.5, -0.5),
-        glm::vec3(-0.5,  0.5,  0.5),
-        glm::vec3( 0.5, -0.5, -0.5),
-        glm::vec3( 0.5, -0.5,  0.5),
-        glm::vec3( 0.5,  0.5, -0.5),
-        glm::vec3( 0.5,  0.5,  0.5)
-    };
-
-    //visible from the inside only, so faces in
-    const std::vector<GLuint> INDICES = {
-        0, 1, 5, 4, //front
-        6, 7, 3, 2, //back
-        2, 0, 4, 6, //top
-        7, 5, 1, 3, //bottom
-        2, 3, 1, 0, //left
-        4, 5, 7, 6  //right
-    };
-
-    auto vBuffer = std::make_shared<VertexBuffer>(VERTICES);
-    auto iBuffer = std::make_shared<IndexBuffer>(INDICES, GL_QUADS);
-    mesh = std::make_shared<Mesh>(vBuffer, iBuffer, GL_QUADS);
-    return mesh;
-}
-
-
-
-std::shared_ptr<Mesh> Viewer::getExternalFacingCube()
-{
-    static std::shared_ptr<Mesh> mesh = nullptr;
-
-    if (mesh)
-        return mesh;
-
-    const std::vector<glm::vec3> VERTICES = {
-        glm::vec3(-0.5, -0.5, -0.5),
-        glm::vec3(-0.5, -0.5,  0.5),
-        glm::vec3(-0.5,  0.5, -0.5),
-        glm::vec3(-0.5,  0.5,  0.5),
-        glm::vec3( 0.5, -0.5, -0.5),
-        glm::vec3( 0.5, -0.5,  0.5),
-        glm::vec3( 0.5,  0.5, -0.5),
-        glm::vec3( 0.5,  0.5,  0.5)
-    };
-
-    //visible from the inside only, so faces in
-    const std::vector<GLuint> INDICES = {
-        4, 5, 1, 0, //front
-        2, 3, 7, 6, //back
-        6, 4, 0, 2, //top
-        3, 1, 5, 7, //bottom
-        0, 1, 3, 2, //left
-        6, 7, 5, 4, //right
-    };
-
-    auto vBuffer = std::make_shared<VertexBuffer>(VERTICES);
-    auto iBuffer = std::make_shared<IndexBuffer>(INDICES, GL_QUADS);
-    mesh = std::make_shared<Mesh>(vBuffer, iBuffer, GL_QUADS);
-    return mesh;
 }
 
 

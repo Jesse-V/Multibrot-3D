@@ -49,18 +49,17 @@ class InstancedModel
                        const BufferList& optionalDBs);
 
         virtual void saveAs(GLuint programHandle);
-        void addInstance(const glm::mat4& instanceModelMatrix);
-        void render(GLuint programHandle);
-        void setModelMatrix(std::size_t index, const glm::mat4& matrix);
+        virtual void addInstance(const glm::mat4& instanceModelMatrix);
+        virtual void render(GLuint programHandle);
+        virtual void setModelMatrix(std::size_t index, const glm::mat4& matrix);
         void setVisible(bool visible);
         BufferList getOptionalDataBuffers();
         std::size_t getInstanceCount();
 
-    private:
+    protected:
         void enableDataBuffers();
         void disableDataBuffers();
 
-    protected:
         std::shared_ptr<Mesh> mesh_;
         std::vector<glm::mat4> modelMatrices_;
         BufferList optionalDBs_;

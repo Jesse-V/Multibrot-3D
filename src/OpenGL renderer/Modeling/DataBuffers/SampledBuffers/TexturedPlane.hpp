@@ -23,8 +23,8 @@
                          jvictors@jessevictors.com
 \******************************************************************************/
 
-#ifndef TEXTURED_CUBE
-#define TEXTURED_CUBE
+#ifndef TEXTURED_PLANE
+#define TEXTURED_PLANE
 
 #include "Image.hpp"
 #include "../OptionalDataBuffer.hpp"
@@ -32,34 +32,23 @@
 #include "glm/glm.hpp"
 #include <memory>
 
-class TexturedCube : public OptionalDataBuffer
+class TexturedPlane : public OptionalDataBuffer
 {
     public:
-        TexturedCube(
-            const std::shared_ptr<Image>& positiveX,
-            const std::shared_ptr<Image>& negativeX,
-            const std::shared_ptr<Image>& positiveY,
-            const std::shared_ptr<Image>& negativeY,
-            const std::shared_ptr<Image>& positiveZ,
-            const std::shared_ptr<Image>& negativeZ
-        );
-        void mapTo(GLenum target, const std::shared_ptr<Image>& img);
+        TexturedPlane(const std::shared_ptr<Image>& image);
 
         virtual void store(GLuint programHandle);
         virtual void enable();
         virtual void disable();
 
-        static std::shared_ptr<Mesh> getInternalFacingMesh();
-        static std::shared_ptr<Mesh> getExternalFacingMesh();
+        static std::shared_ptr<Mesh> getMesh();
 
         virtual SnippetPtr getVertexShaderGLSL();
         virtual SnippetPtr getFragmentShaderGLSL();
 
     private:
-        std::shared_ptr<Image> positiveX_, negativeX_,
-                               positiveY_, negativeY_,
-                               positiveZ_, negativeZ_;
-        GLuint cubeTexture_;
+        std::shared_ptr<Image> image_;
+        GLuint planeTexture_;
         GLint textureCoordinates_;
 };
 

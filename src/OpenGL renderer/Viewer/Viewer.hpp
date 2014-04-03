@@ -38,9 +38,10 @@
 
 #include "User.hpp"
 #include "World/Scene.hpp"
+#include "Modeling/UnifiedInstancedModel.hpp"
 #include <memory>
 
-typedef std::pair<int, std::shared_ptr<InstancedModel>> ColoredCube;
+typedef std::pair<int, std::shared_ptr<UnifiedInstancedModel>> ColoredCube;
 
 class Viewer
 {

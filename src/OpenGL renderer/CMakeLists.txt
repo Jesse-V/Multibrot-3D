@@ -78,6 +78,7 @@ add_executable(MultibrotRenderer
     World/Camera.cpp
     World/Light.cpp
 
+    Modeling/UnifiedInstancedModel.cpp
     Modeling/InstancedModel.cpp
     Modeling/Mesh/Mesh.cpp
 
@@ -86,6 +87,7 @@ add_executable(MultibrotRenderer
     Modeling/DataBuffers/ColorBuffer.cpp
     Modeling/DataBuffers/SampledBuffers/Image.cpp
     Modeling/DataBuffers/SampledBuffers/TexturedCube.cpp
+    Modeling/DataBuffers/SampledBuffers/TexturedPlane.cpp
 
     Modeling/Shading/ShaderManager.cpp
     Modeling/Shading/ShaderSnippet.cpp

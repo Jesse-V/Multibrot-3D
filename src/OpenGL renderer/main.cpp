@@ -59,7 +59,7 @@ void animateThread()
 
 void updateThread()
 {
-    const int UPDATE_DELAY = 20; //17 is ~60, 20 is 50 FPS, 25 is 40 FPS
+    const int UPDATE_DELAY = 10; //17 is ~60, 20 is 50 FPS, 25 is 40 FPS
     try
     {
         while (!readyToUpdate_)

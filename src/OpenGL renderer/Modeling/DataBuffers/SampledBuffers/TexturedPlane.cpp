@@ -23,31 +23,19 @@
                          jvictors@jessevictors.com
 \******************************************************************************/
 
-#include "TexturedCube.hpp"
+#include "TexturedPlane.hpp"
 #include <iostream>
 #include "Modeling/Shading/Program.hpp"
 #include <string.h>
 
 
-TexturedCube::TexturedCube(
-    const std::shared_ptr<Image>& positiveX,
-    const std::shared_ptr<Image>& negativeX,
-    const std::shared_ptr<Image>& positiveY,
-    const std::shared_ptr<Image>& negativeY,
-    const std::shared_ptr<Image>& positiveZ,
-    const std::shared_ptr<Image>& negativeZ
-) :
-    positiveX_(positiveX), negativeX_(negativeX),
-    positiveY_(positiveY), negativeY_(negativeY),
-    positiveZ_(positiveZ), negativeZ_(negativeZ)
+TexturedPlane::TexturedPlane(const std::shared_ptr<Image>& image) :
+    image_(image)
 {}
 
 
-//glDeleteTextures(1, &texture_id);
 
-
-
-void TexturedCube::store(GLuint programHandle)
+void TexturedPlane::store(GLuint programHandle)
 {
     /*
         http://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
@@ -56,19 +44,25 @@ void TexturedCube::store(GLuint programHandle)
         https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_06
     */
 
-    glGenTextures(1, &cubeTexture_);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture_);
+    glGenTextures(1, &planeTexture_);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, planeTexture_);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     //glActiveTexture(GL_TEXTURE0);
 
-    mapTo(GL_TEXTURE_CUBE_MAP_POSITIVE_X, positiveX_);
-    mapTo(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, negativeX_);
-    mapTo(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, positiveY_);
-    mapTo(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, negativeY_);
-    mapTo(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, positiveZ_);
-    mapTo(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, negativeZ_);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, image_->getWidth(),
+        image_->getWidth(), 0, GL_BGR, GL_UNSIGNED_BYTE, image_->getImageData());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, image_->getWidth(),
+        image_->getWidth(), 0, GL_BGR, GL_UNSIGNED_BYTE, image_->getImageData());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, image_->getWidth(),
+        image_->getWidth(), 0, GL_BGR, GL_UNSIGNED_BYTE, image_->getImageData());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, image_->getWidth(),
+        image_->getWidth(), 0, GL_BGR, GL_UNSIGNED_BYTE, image_->getImageData());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, image_->getWidth(),
+        image_->getWidth(), 0, GL_BGR, GL_UNSIGNED_BYTE, image_->getImageData());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, image_->getWidth(),
+        image_->getWidth(), 0, GL_BGR, GL_UNSIGNED_BYTE, image_->getImageData());
 
     textureCoordinates_ = glGetAttribLocation(programHandle, "UV");
     if (textureCoordinates_ == -1)
@@ -78,65 +72,21 @@ void TexturedCube::store(GLuint programHandle)
 
 
 
-void TexturedCube::enable()
+void TexturedPlane::enable()
 {
     glVertexAttribPointer(textureCoordinates_, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 
 
-void TexturedCube::disable()
+void TexturedPlane::disable()
 {
     glDisableVertexAttribArray(textureCoordinates_);
 }
 
 
 
-void TexturedCube::mapTo(GLenum target, const std::shared_ptr<Image>& img)
-{
-    glTexImage2D(target, 0, GL_RGB, img->getWidth(), img->getWidth(), 0,
-        GL_BGR, GL_UNSIGNED_BYTE, img->getImageData()); //image must be square
-}
-
-
-
-std::shared_ptr<Mesh> TexturedCube::getInternalFacingMesh()
-{
-    static std::shared_ptr<Mesh> mesh = nullptr;
-
-    if (mesh)
-        return mesh;
-
-    const std::vector<glm::vec3> VERTICES = {
-        glm::vec3(-0.5, -0.5, -0.5),
-        glm::vec3(-0.5, -0.5,  0.5),
-        glm::vec3(-0.5,  0.5, -0.5),
-        glm::vec3(-0.5,  0.5,  0.5),
-        glm::vec3( 0.5, -0.5, -0.5),
-        glm::vec3( 0.5, -0.5,  0.5),
-        glm::vec3( 0.5,  0.5, -0.5),
-        glm::vec3( 0.5,  0.5,  0.5)
-    };
-
-    //visible from the inside only, so faces in
-    const std::vector<GLuint> INDICES = {
-        0, 1, 5, 4, //front
-        6, 7, 3, 2, //back
-        2, 0, 4, 6, //top
-        7, 5, 1, 3, //bottom
-        2, 3, 1, 0, //left
-        4, 5, 7, 6  //right
-    };
-
-    auto vBuffer = std::make_shared<VertexBuffer>(VERTICES);
-    auto iBuffer = std::make_shared<IndexBuffer>(INDICES, GL_QUADS);
-    mesh = std::make_shared<Mesh>(vBuffer, iBuffer, GL_QUADS);
-    return mesh;
-}
-
-
-
-std::shared_ptr<Mesh> TexturedCube::getExternalFacingMesh()
+std::shared_ptr<Mesh> TexturedPlane::getMesh()
 {
     static std::shared_ptr<Mesh> mesh = nullptr;
 
@@ -173,19 +123,19 @@ std::shared_ptr<Mesh> TexturedCube::getExternalFacingMesh()
 
 
 //todo: some of this code belongs to SampledBuffer, base class's method could be called
-SnippetPtr TexturedCube::getVertexShaderGLSL()
+SnippetPtr TexturedPlane::getVertexShaderGLSL()
 {
     return std::make_shared<ShaderSnippet>(
         R".(
-            //TexturedCube fields
+            //TexturedPlane fields
             attribute vec3 UV;
             varying vec3 UVf;
         ).",
         R".(
-            //TexturedCube methods
+            //TexturedPlane methods
         ).",
         R".(
-            //TexturedCube main method code
+            //TexturedPlane main method code
             UVf = UV;
         )."
     );
@@ -193,19 +143,19 @@ SnippetPtr TexturedCube::getVertexShaderGLSL()
 
 
 
-SnippetPtr TexturedCube::getFragmentShaderGLSL()
+SnippetPtr TexturedPlane::getFragmentShaderGLSL()
 {
     return std::make_shared<ShaderSnippet>(
         R".(
-            //TexturedCube fields
+            //TexturedPlane fields
             uniform samplerCube cubeSampler;
             varying vec3 UVf;
         ).",
         R".(
-            //TexturedCube methods
+            //TexturedPlane methods
         ).",
         R".(
-            //TexturedCube main method code
+            //TexturedPlane main method code
             colors.material = textureCube(cubeSampler, UVf).rgb;
         )."
     );
