@@ -35,6 +35,7 @@
 #include <iterator>
 #include <sstream>
 #include <iostream>
+#include <math.h>
 
 
 Viewer::Viewer() :
@@ -134,16 +135,15 @@ void Viewer::addBellCurveBlocks()
 void Viewer::addFractal()
 {
     static const auto SCALE = glm::vec3(1 / 64.0f);
-    static const auto OFFSET = glm::vec3(25, 25, -4) / SCALE;
+    static const auto POS = glm::vec3(25, 25, -4);
     static const auto BOX_SCALE = glm::vec3(1.0f);
-
-    auto geometry = readGeometry("geometry.dat");
 
     std::vector<std::pair<int, std::shared_ptr<std::vector<glm::mat4>>>> boxTypes;
     for (int j = 128; j >= 1; j /= 2)
         boxTypes.push_back(std::make_pair(j, std::make_shared<std::vector<glm::mat4>>()));
 
     long count = 0;
+    auto geometry = readGeometry("geometry.dat");
     for (auto rectangle : geometry)
     {
         glm::vec3 min = glm::vec3(rectangle[1], rectangle[2], rectangle[3]);
@@ -156,7 +156,7 @@ void Viewer::addFractal()
             if ((int)minDimSize == boxType.first)
             {
                 auto matrix = glm::scale(glm::mat4(), SCALE);
-                matrix      = glm::translate(matrix, min - glm::vec3(512) + OFFSET);
+                matrix      = glm::translate(matrix, min - glm::vec3(512) + POS / SCALE);
                 matrix      = glm::scale(matrix, (max - min) * BOX_SCALE);
                 matrix      = glm::translate(matrix, glm::vec3(0.5f));
                 boxType.second->push_back(matrix);
@@ -182,8 +182,14 @@ void Viewer::addFractal()
         {
             for (auto vertex : vertices)
             {
-                auto transformed = (modelMatrix * glm::vec4(vertex, 1)).xyz();
-                vertexColors.push_back(glm::normalize(transformed));
+                float r = 0, g = 0, b = 0;
+                auto newV = (modelMatrix * glm::vec4(vertex, 1)).xyz();
+                auto radius = sqrt(std::pow(POS.y - newV.y, 2) + std::pow(POS.z - newV.z, 2));
+
+                r = g = (radius - 2.4f) / 3.5f, b = 1;
+                g = std::max(g, (POS.x - newV.x - 6.9f) / 1.5f);
+
+                vertexColors.push_back(glm::vec3(r, g, b));
             }
         }
 
