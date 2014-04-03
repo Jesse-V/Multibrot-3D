@@ -43,7 +43,6 @@
 
 typedef UnifiedInstancedModel ModelType;
 typedef std::pair<int, std::shared_ptr<ModelType>> ColoredCube;
-//TODO: change to InstancedModel
 
 class Viewer
 {
@@ -63,7 +62,6 @@ class Viewer
         void addFractal();
         void addSkybox();
         std::vector<std::vector<int>> readGeometry(const std::string& filename);
-        std::vector<ColoredCube> getBoxModels();
         std::shared_ptr<Mesh> getInternalFacingCube();
         std::shared_ptr<Mesh> getExternalFacingCube();
         std::shared_ptr<Camera> createCamera();

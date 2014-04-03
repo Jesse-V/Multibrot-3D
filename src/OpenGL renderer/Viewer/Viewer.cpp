@@ -138,7 +138,10 @@ void Viewer::addFractal()
     static const auto BOX_SCALE = glm::vec3(1.0f);
 
     auto geometry = readGeometry("geometry.dat");
-    auto boxModels = getBoxModels();
+
+    std::vector<std::pair<int, std::shared_ptr<std::vector<glm::mat4>>>> boxTypes;
+    for (int j = 128; j >= 1; j /= 2)
+        boxTypes.push_back(std::make_pair(j, std::make_shared<std::vector<glm::mat4>>()));
 
     long count = 0;
     for (auto rectangle : geometry)
@@ -148,15 +151,15 @@ void Viewer::addFractal()
         glm::vec3 size = max - min;
         float minDimSize = std::min(size.x, std::min(size.y, size.z));
 
-        for (auto model : boxModels)
+        for (auto boxType : boxTypes)
         {
-            if ((int)minDimSize == model.first)
+            if ((int)minDimSize == boxType.first)
             {
                 auto matrix = glm::scale(glm::mat4(), SCALE);
                 matrix      = glm::translate(matrix, min - glm::vec3(512) + OFFSET);
                 matrix      = glm::scale(matrix, (max - min) * BOX_SCALE);
                 matrix      = glm::translate(matrix, glm::vec3(0.5f));
-                model.second->addInstance(matrix);
+                boxType.second->push_back(matrix);
                 count++;
                 break;
             }
@@ -164,9 +167,30 @@ void Viewer::addFractal()
     }
 
     std::cout << "Instance count: " << count << std::endl;
+    for (auto boxType : boxTypes)
+        std::cout << boxType.first << ", " << boxType.second->size() << std::endl;
 
-    for (auto model : boxModels)
-        scene_->addModel(model.second); //add to Scene and save
+    auto mesh = TexturedCube::getExternalFacingMesh();
+    for (auto boxType : boxTypes)
+    {
+        if (boxType.second->size() == 0)
+            continue;
+
+        std::vector<glm::vec3> vertexColors;
+        auto vertices = mesh->getVertexBuffer()->getVertices();
+        for (auto modelMatrix : *boxType.second)
+        {
+            for (auto vertex : vertices)
+            {
+                auto transformed = (modelMatrix * glm::vec4(vertex, 1)).xyz();
+                vertexColors.push_back(glm::normalize(transformed));
+            }
+        }
+
+        BufferList list = { std::make_shared<ColorBuffer>(vertexColors) };
+        auto model = std::make_shared<ModelType>(mesh, *boxType.second, list);
+        scene_->addModel(model); //add to Scene and save
+    }
 }
 
 
@@ -194,59 +218,6 @@ std::vector<std::vector<int>> Viewer::readGeometry(const std::string& filename)
     std::cout << "Read " << geometry.size() << " objects from file." << std::endl;
 
     return geometry;
-}
-
-
-
-std::vector<ColoredCube> Viewer::getBoxModels()
-{
-    std::vector<std::pair<int, glm::vec3>> boxColors;
-    boxColors.push_back(std::make_pair(128, glm::vec3(1, 0, 0)));
-    boxColors.push_back(std::make_pair(64, glm::vec3(0, 1, 0)));
-    boxColors.push_back(std::make_pair(32, glm::vec3(0, 0, 1)));
-    boxColors.push_back(std::make_pair(16, glm::vec3(0, 0.5, 1)));
-    boxColors.push_back(std::make_pair(8, glm::vec3(0, 1, 0.5)));
-    boxColors.push_back(std::make_pair(4, glm::vec3(0.05, 0.05, 0.05)));
-    boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));
-
-    /*boxColors.push_back(std::make_pair(256, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(128, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(64, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(32, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(16, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(8, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(4, glm::vec3(1, 1, 1)));
-    boxColors.push_back(std::make_pair(2, glm::vec3(1, 1, 1)));*/
-
-    auto mesh = TexturedCube::getExternalFacingMesh();
-    std::vector<ColoredCube> cubes;
-    for (auto box : boxColors)
-    {
-        std::vector<glm::vec3> colors {
-            box.second / 1.0f,
-            box.second / 3.0f,
-            box.second / 1.5f,
-            box.second / 3.0f,
-            box.second / 3.0f,
-            box.second / 1.5f,
-            box.second / 3.0f,
-            box.second / 1.0f
-            /*
-            box.second / 1.0f,
-            box.second / 4.0f,
-            box.second / 2.0f,
-            box.second / 4.0f,
-            box.second / 4.0f,
-            box.second / 2.0f,
-            box.second / 4.0f,
-            box.second / 1.0f*/
-        };
-        BufferList list = { std::make_shared<ColorBuffer>(box.second, 6000) }; //(colors)
-        auto model = std::make_shared<ModelType>(mesh, list);
-        cubes.push_back(std::make_pair(box.first, model));
-    }
-
-    return cubes;
 }
 
 
