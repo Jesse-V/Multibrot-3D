@@ -145,9 +145,46 @@ void InstancedModel::disableDataBuffers()
 
 
 
+void InstancedModel::unify(const glm::mat4& under)
+{
+    auto vertices   = mesh_->getVertexBuffer()->getVertices();
+    auto indexes    = mesh_->getIndexBuffer()->getIndices();
+    auto renderMode = mesh_->getRenderMode();
+
+    std::vector<glm::vec3> newVertices;
+    std::vector<GLuint> newIndices;
+
+    for (std::size_t instance = 0; instance < modelMatrices_.size(); instance++)
+    {
+        auto modelMatrix = modelMatrices_[instance];
+
+        for (auto vertex : vertices)
+            newVertices.push_back((modelMatrix * glm::vec4(vertex, 1)).xyz());
+
+        for (auto index : indexes)
+            newIndices.push_back(index + instance * vertices.size());
+    }
+
+    auto vBuffer = std::make_shared<VertexBuffer>(newVertices);
+    auto iBuffer = std::make_shared<IndexBuffer>(newIndices, renderMode);
+    mesh_ = std::make_shared<Mesh>(vBuffer, iBuffer, renderMode);
+
+    modelMatrices_.clear();
+    modelMatrices_.push_back(under);
+}
+
+
+
 void InstancedModel::setModelMatrix(std::size_t index, const glm::mat4& matrix)
 {
     modelMatrices_[index] = matrix;
+}
+
+
+
+glm::mat4 InstancedModel::getModelMatrix(std::size_t index)
+{
+    return modelMatrices_[index];
 }
 
 
@@ -170,4 +207,18 @@ BufferList InstancedModel::getOptionalDataBuffers()
 std::size_t InstancedModel::getInstanceCount()
 {
     return modelMatrices_.size();
+}
+
+
+
+void InstancedModel::setAffectedByLight(bool value)
+{
+    lightApplicable_ = value;
+}
+
+
+
+bool InstancedModel::isAffectedByLight()
+{
+    return lightApplicable_;
 }

@@ -35,7 +35,7 @@ const int MAX_FPS = 120;
 
 void animateThread()
 {
-    const int ANIMATE_DELAY = 40;
+    const int ANIMATE_DELAY = 20;
     try
     {
         while (!readyToUpdate_)
@@ -328,9 +328,9 @@ int main(int argc, char** argv)
         std::cout << "Finished Glut and window initialization." << std::endl;
 
         std::thread updater(updateThread);
-        //std::thread animater(animateThread);
+        std::thread animater(animateThread);
         updater.detach();
-        //animater.detach();
+        animater.detach();
 
         std::cout << "Threads launched. FPS cap set at " << MAX_FPS << std::endl;
         glutMainLoop();

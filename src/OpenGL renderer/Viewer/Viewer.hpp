@@ -42,7 +42,6 @@
 #include <memory>
 
 typedef UnifiedInstancedModel ModelType;
-typedef std::pair<int, std::shared_ptr<ModelType>> ColoredCube;
 
 class Viewer
 {
@@ -71,6 +70,7 @@ class Viewer
 
         std::shared_ptr<Scene> scene_;
         std::shared_ptr<User> user_;
+        std::vector<std::shared_ptr<ModelType>> boxTypes_;
         float timeSpentRendering_;
         int frameCount_;
         bool needsRerendering_;

@@ -102,7 +102,7 @@ std::vector<Triangle> Mesh::getTriangles()
 
 
 
-GLenum Mesh::getRenderingMode()
+GLenum Mesh::getRenderMode()
 {
     return renderingMode_;
 }

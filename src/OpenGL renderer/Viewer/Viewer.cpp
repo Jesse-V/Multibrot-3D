@@ -30,6 +30,7 @@
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedPlane.hpp"
 #include "Modeling/DataBuffers/ColorBuffer.hpp"
+#include "glm/gtx/transform.hpp"
 #include <thread>
 #include <algorithm>
 #include <iterator>
@@ -156,7 +157,7 @@ void Viewer::addFractal()
             if ((int)minDimSize == boxType.first)
             {
                 auto matrix = glm::scale(glm::mat4(), SCALE);
-                matrix      = glm::translate(matrix, min - glm::vec3(512) + POS / SCALE);
+                matrix      = glm::translate(matrix, min - glm::vec3(512));
                 matrix      = glm::scale(matrix, (max - min) * BOX_SCALE);
                 matrix      = glm::translate(matrix, glm::vec3(0.5f));
                 boxType.second->push_back(matrix);
@@ -184,10 +185,10 @@ void Viewer::addFractal()
             {
                 float r = 0, g = 0, b = 0;
                 auto newV = (modelMatrix * glm::vec4(vertex, 1)).xyz();
-                auto radius = sqrt(std::pow(POS.y - newV.y, 2) + std::pow(POS.z - newV.z, 2));
+                auto radius = sqrt(std::pow(newV.y, 2) + std::pow(newV.z, 2));
 
                 r = g = (radius - 2.4f) / 3.5f, b = 1;
-                g = std::max(g, (POS.x - newV.x - 6.9f) / 1.5f);
+                g = std::max(g, (-newV.x - 6.9f) / 1.5f);
 
                 vertexColors.push_back(glm::vec3(r, g, b));
             }
@@ -195,7 +196,10 @@ void Viewer::addFractal()
 
         BufferList list = { std::make_shared<ColorBuffer>(vertexColors) };
         auto model = std::make_shared<ModelType>(mesh, *boxType.second, list);
+        boxTypes_.push_back(model);
         scene_->addModel(model); //add to Scene and save
+        model->setModelMatrix(0, glm::translate(POS));
+        //model->setModelMatrix(0, glm::translate(-POS));
     }
 }
 
@@ -274,7 +278,14 @@ void Viewer::animate(int deltaTime)
 {
     bool animationHappened = false;
 
-    //TODO: make any animation calls, if any happened set flag to true
+    for (auto boxType : boxTypes_)
+    {
+        auto matrix = boxType->getModelMatrix(0);
+        matrix = glm::rotate(matrix, 0.15f, glm::vec3(1, 0, 0));
+        boxType->setModelMatrix(0, matrix);
+    }
+
+    animationHappened = true;
 
     if (animationHappened)
         needsRerendering_ = true;

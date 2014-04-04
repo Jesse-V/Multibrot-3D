@@ -79,7 +79,7 @@ void UnifiedInstancedModel::saveAs(GLuint programHandle)
 {
     auto vertices   = mesh_->getVertexBuffer()->getVertices();
     auto indexes    = mesh_->getIndexBuffer()->getIndices();
-    auto renderMode = mesh_->getRenderingMode();
+    auto renderMode = mesh_->getRenderMode();
 
     std::vector<glm::vec3> newVertices;
     std::vector<GLuint> newIndices;
@@ -129,7 +129,7 @@ void UnifiedInstancedModel::render(GLuint programHandle)
 
 void UnifiedInstancedModel::setModelMatrix(std::size_t index, const glm::mat4& matrix)
 {
-    if (unified_)
+    if (index > 0 && unified_)
         throw std::logic_error("Can't set modelMatrix, already unified!");
     else
         InstancedModel::setModelMatrix(index, matrix);

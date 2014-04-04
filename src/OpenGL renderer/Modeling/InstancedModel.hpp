@@ -26,6 +26,8 @@
 #ifndef INSTANCED_MODEL
 #define INSTANCED_MODEL
 
+#define GLM_SWIZZLE //needed for .xyz(), just like in Camera class
+
 #include "Modeling/Mesh/Mesh.hpp"
 #include "Modeling/DataBuffers/OptionalDataBuffer.hpp"
 #include <vector>
@@ -52,9 +54,13 @@ class InstancedModel
         virtual void addInstance(const glm::mat4& instanceModelMatrix);
         virtual void render(GLuint programHandle);
         virtual void setModelMatrix(std::size_t index, const glm::mat4& matrix);
+        void unify(const glm::mat4& under);
+        glm::mat4 getModelMatrix(std::size_t index);
         void setVisible(bool visible);
         BufferList getOptionalDataBuffers();
         std::size_t getInstanceCount();
+        void setAffectedByLight(bool value);
+        bool isAffectedByLight();
 
     protected:
         void enableDataBuffers();
@@ -65,7 +71,7 @@ class InstancedModel
         BufferList optionalDBs_;
         GLuint cachedHandle_;
         GLint matrixModelLocation_;
-        bool isVisible_;
+        bool isVisible_, lightApplicable_;
 };
 
 typedef std::shared_ptr<InstancedModel> InstancedModelPtr;
