@@ -78,7 +78,6 @@ add_executable(MultibrotRenderer
     World/Camera.cpp
     World/Light.cpp
 
-    Modeling/UnifiedInstancedModel.cpp
     Modeling/InstancedModel.cpp
     Modeling/Mesh/Mesh.cpp
 

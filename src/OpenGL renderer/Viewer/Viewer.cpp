@@ -185,7 +185,7 @@ void Viewer::addFractal()
             {
                 float r = 0, g = 0, b = 0;
                 auto newV = (modelMatrix * glm::vec4(vertex, 1)).xyz();
-                auto radius = sqrt(std::pow(newV.y, 2) + std::pow(newV.z, 2));
+                auto radius = (float)sqrt(std::pow(newV.y, 2) + std::pow(newV.z, 2));
 
                 r = g = (radius - 2.4f) / 3.5f, b = 1;
                 g = std::max(g, (-newV.x - 6.9f) / 1.5f);
@@ -195,11 +195,10 @@ void Viewer::addFractal()
         }
 
         BufferList list = { std::make_shared<ColorBuffer>(vertexColors) };
-        auto model = std::make_shared<ModelType>(mesh, *boxType.second, list);
+        auto model = std::make_shared<InstancedModel>(mesh, *boxType.second, list);
+        model->unify(glm::translate(POS));
         boxTypes_.push_back(model);
         scene_->addModel(model); //add to Scene and save
-        model->setModelMatrix(0, glm::translate(POS));
-        //model->setModelMatrix(0, glm::translate(-POS));
     }
 }
 

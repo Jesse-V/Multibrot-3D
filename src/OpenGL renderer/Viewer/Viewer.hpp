@@ -26,22 +26,9 @@
 #ifndef VIEWER
 #define VIEWER
 
-/**
-    The Viewer class performs high-level tasks for setting up and managing
-    the application as a whole. The Viewer is a singleton, but when constructed
-    it uses the FAHClientIO class to load trajectory information from FAHClient,
-    constructs SlotViewers, and adds Lights and a Camera to the Scene. It also
-    has an update and render method to implement a simple gameplay loop.
-    It uses the update method to ask the SlotViewers to animate or step forward
-    the amount of time since the last time the update method was called.
-**/
-
 #include "User.hpp"
 #include "World/Scene.hpp"
-#include "Modeling/UnifiedInstancedModel.hpp"
 #include <memory>
-
-typedef UnifiedInstancedModel ModelType;
 
 class Viewer
 {
@@ -70,7 +57,7 @@ class Viewer
 
         std::shared_ptr<Scene> scene_;
         std::shared_ptr<User> user_;
-        std::vector<std::shared_ptr<ModelType>> boxTypes_;
+        std::vector<std::shared_ptr<InstancedModel>> boxTypes_;
         float timeSpentRendering_;
         int frameCount_;
         bool needsRerendering_;

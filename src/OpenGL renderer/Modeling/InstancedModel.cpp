@@ -162,7 +162,7 @@ void InstancedModel::unify(const glm::mat4& under)
             newVertices.push_back((modelMatrix * glm::vec4(vertex, 1)).xyz());
 
         for (auto index : indexes)
-            newIndices.push_back(index + instance * vertices.size());
+            newIndices.push_back((GLuint)((std::size_t)index + instance * vertices.size()));
     }
 
     auto vBuffer = std::make_shared<VertexBuffer>(newVertices);
