@@ -96,8 +96,8 @@ void Viewer::addModels()
 
 void Viewer::addBellCurveBlocks()
 {
-    static const float SPREAD = 0.005f, HEIGHT = 15.0f;
-    static const int RES = 25;
+    static const float SPREAD = 0.004f, HEIGHT = 15.0f;
+    static const int RES = 30;
 
     auto dirt      = std::make_shared<Image>("images/dirt.png");
     auto grassTop  = std::make_shared<Image>("images/grass_top.png");
@@ -114,20 +114,26 @@ void Viewer::addBellCurveBlocks()
     auto blocks = std::make_shared<InstancedModel>(
                     TexturedCube::getExternalFacingMesh(), list);
 
-    for (int x = -RES; x < RES; x++)
+    long count = 0;
+    for (int x = -RES; x <= RES; x++)
     {
-        for (int y = -RES; y < RES; y++)
+        for (int y = -RES; y <= RES; y++)
         {
             float dSq = x * x + y * y;
             float z = HEIGHT / (float)pow(2.718282f, SPREAD * dSq);
             z = (int)z;
 
+            if (z >= 11)
+                z = 11;
+
             auto loc = glm::vec3(x + RES, y + RES, -z) + glm::vec3(0.5f);
             auto matrix = glm::translate(glm::mat4(), loc);
             blocks->addInstance(matrix);
+            count++;
         }
     }
 
+    std::cout << "TexturedCube count: " << count << std::endl;
     scene_->addModel(blocks); //add to Scene and save
 }
 
@@ -136,7 +142,7 @@ void Viewer::addBellCurveBlocks()
 void Viewer::addFractal()
 {
     static const auto SCALE = glm::vec3(1 / 64.0f);
-    static const auto POS = glm::vec3(25, 25, -4);
+    static const auto POS = glm::vec3(30, 30, -3);
     static const auto BOX_SCALE = glm::vec3(1.0f);
 
     std::vector<std::pair<int, std::shared_ptr<std::vector<glm::mat4>>>> boxTypes;
@@ -196,7 +202,9 @@ void Viewer::addFractal()
 
         BufferList list = { std::make_shared<ColorBuffer>(vertexColors) };
         auto model = std::make_shared<InstancedModel>(mesh, *boxType.second, list);
-        model->unify(glm::translate(POS));
+
+
+        model->unify(glm::rotate(glm::translate(POS), 0.0f, glm::vec3(0, 1, 0)));
         boxTypes_.push_back(model);
         scene_->addModel(model); //add to Scene and save
     }

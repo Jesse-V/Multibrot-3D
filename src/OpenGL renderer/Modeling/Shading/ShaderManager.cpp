@@ -84,6 +84,25 @@ std::string ShaderManager::assembleFragmentShaderStr(
             if (colors.material == vec3(-1))
                 colors.material = vec3(1);
 
+            //fog
+            const float minD = 80;
+            const float maxD = 120;
+            float d = sqrt(pow(fragPos.x, 2) + pow(fragPos.y, 2) + pow(fragPos.z, 2));
+            if (d >= minD)
+            {
+                vec3 fog = vec3(1 - (d - minD) / (maxD - minD));
+                colors.lightBlend = fog;
+            }
+
+            //light
+            float r = sqrt(pow(fragPos.x, 2) + pow(fragPos.y, 2));
+            float beamR = 3;
+            if (r < beamR)
+            {
+                //todo: should lightBlend start at 1?
+                colors.lightBlend = vec3(max(1, beamR - r));
+            }
+
             if (colors.lightBlend == vec3(-1))
                 colors.lightBlend = vec3(1);
 
