@@ -261,12 +261,10 @@ void Viewer::addSkybox()
 std::shared_ptr<Camera> Viewer::createCamera()
 {
     auto camera = std::make_shared<Camera>();
-    camera->setPosition(glm::vec3(0, -5, 0));
 
-    camera->lookAt(
-        glm::vec3(0, 0, 0),
-        glm::vec3(0, 0, 1)
-    );
+    camera->translate(glm::vec3(11, 11, 9));
+    camera->yaw(-45.0f);
+    camera->pitch(-25.0f);
 
     return camera;
 }
@@ -307,6 +305,7 @@ void Viewer::render()
     needsRerendering_ = false; //it was true, so reset it and then render
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClearColor(255 / 255.0f, 249 / 255.0f, 253 / 255.0f, 1);
 
     timeSpentRendering_ += scene_->render();
     frameCount_++;

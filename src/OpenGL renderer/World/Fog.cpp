@@ -38,14 +38,12 @@ SnippetPtr Fog::getVertexShaderGLSL()
     return std::make_shared<ShaderSnippet>(
         R".(
             //Fog fields
-            varying vec3 fragPos;
         ).",
         R".(
             //Fog methods
         ).",
         R".(
             //Fog main method code
-            fragmentPosition = (modelMatrix * vec4(vertex, 1)).xyz;
         )."
     );
 }
@@ -59,7 +57,10 @@ SnippetPtr Fog::getFragmentShaderGLSL()
             //Fog main method code
             const float minD = )." << min_ ".(;
             const float maxD = )." << max_ ".(;
-            const float d = sqrt(pow(fragPos.x, 2) + pow(fragPos.y, 2) + pow(fragPos.z, 2));
+            float d = sqrt(pow(vertexProjectedFrag.x, 2) +
+                pow(vertexProjectedFrag.y, 2) +
+                pow(vertexProjectedFrag.z, 2));
+
             if (d >= minD)
             {
                 vec3 fog = vec3(1 - (d - minD) / (maxD - minD));

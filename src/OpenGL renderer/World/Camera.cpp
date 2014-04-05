@@ -43,8 +43,10 @@ Camera::Camera() :
 // Reset the camera back to its defaults
 void Camera::reset()
 {
-    setPosition(glm::vec3(0.0, 0.0, 0.5));
-    lookAt(glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 1.0, 0.0));
+    auto startPos = glm::vec3(0, -1, 0);
+    setPosition(startPos);
+    lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+    translate(-startPos);
 
     fieldOfView_   = 45.0f;         // frustrum viewing aperture
     aspectRatio_   = 4.0f / 3.0f;   // frustrum view angling
