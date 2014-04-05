@@ -23,19 +23,51 @@
                          jvictors@jessevictors.com
 \******************************************************************************/
 
-#ifndef FOG
-#define FOG
+#include "NewLight.hpp"
 
-#include "Modeling/Shading/ShaderUtilizer.hpp"
 
-class Fog : public ShaderUtilizer
+void NewLight::setEmitting(bool emitting)
 {
-    public:
-        Fog(float minDistance = 70, float maxDistance = 110);
+    emitting_ = emitting;
+}
 
-        virtual SnippetPtr getVertexShaderGLSL();
-        virtual SnippetPtr getFragmentShaderGLSL();
 
-    private:
-        float minDistance, float maxDistance_;
-};
+
+bool NewLight::isEmitting() const
+{
+    return emitting_;
+}
+
+
+
+SnippetPtr NewLight::getVertexShaderGLSL()
+{
+    return std::make_shared<ShaderSnippet>(
+        R".(
+            //NewLight fields
+        ).",
+        R".(
+            //NewLight methods
+        ).",
+        R".(
+            //NewLight main method code
+        )."
+    );
+}
+
+
+
+SnippetPtr NewLight::getFragmentShaderGLSL()
+{
+    return std::make_shared<ShaderSnippet>(
+        R".(
+            //NewLight fields
+        ).",
+        R".(
+            //NewLight methods
+        ).",
+        R".(
+            //NewLight main
+        )."
+    );
+}

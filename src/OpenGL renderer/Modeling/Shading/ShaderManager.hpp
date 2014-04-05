@@ -41,7 +41,7 @@
 
 #include "Modeling/InstancedModel.hpp"
 #include "Modeling/DataBuffers/DataBuffer.hpp"
-#include "World/Light.hpp"
+#include "World/Lights/Light.hpp"
 #include "Program.hpp"
 #include <memory>
 #include <vector>

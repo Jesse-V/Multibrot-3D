@@ -23,58 +23,29 @@
                          jvictors@jessevictors.com
 \******************************************************************************/
 
-#include "Fog.hpp"
-#include <sstream>
+#ifndef LIGHT_MANAGER
+#define LIGHT_MANAGER
 
+#include "Modeling/Shading/ShaderUtilizer.hpp"
+#include "NewLight.hpp"
+#include <vector>
+#include <memory>
 
-Fog::Fog(float minDistance, float maxDistance) :
-    min_(minDistance), max_(maxDistance)
-{}
+typedef std::vector<std::shared_ptr<NewLight>> LightList;
 
-
-
-SnippetPtr Fog::getVertexShaderGLSL()
+class LightManager : public ShaderUtilizer
 {
-    return std::make_shared<ShaderSnippet>(
-        R".(
-            //Fog fields
-        ).",
-        R".(
-            //Fog methods
-        ).",
-        R".(
-            //Fog main method code
-        )."
-    );
-}
+    public:
+        LightManager();
+
+        void sync(GLuint handle);
+
+        virtual SnippetPtr getVertexShaderGLSL();
+        virtual SnippetPtr getFragmentShaderGLSL();
+
+    private:
+        LightList lights_;
+};
 
 
-
-SnippetPtr Fog::getFragmentShaderGLSL()
-{
-    std::stringstream mainMethodSS("");
-    mainMethodSS << R".(
-            //Fog main method code
-            const float minD = )." << min_ ".(;
-            const float maxD = )." << max_ ".(;
-            float d = sqrt(pow(vertexProjectedFrag.x, 2) +
-                pow(vertexProjectedFrag.y, 2) +
-                pow(vertexProjectedFrag.z, 2));
-
-            if (d >= minD)
-            {
-                vec3 fog = vec3(1 - (d - minD) / (maxD - minD));
-                colors.lightBlend = fog;
-            }
-        ).";
-
-    return std::make_shared<ShaderSnippet>(
-        R".(
-            //Fog fields
-        ).",
-        R".(
-            //Fog methods
-        ).",
-        mainMethodSS.str()
-    );
-}
+#endif

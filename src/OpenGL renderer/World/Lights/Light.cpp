@@ -21,7 +21,7 @@
                 For information regarding this software email:
                                 Jesse Victors
                          jvictors@jessevictors.com
-\******************************************************************************/
+\*****************************************************************************
 
 #include "Light.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -184,3 +184,4 @@ SnippetPtr Light::getFragmentShaderGLSL()
         )."
     );
 }
+*/

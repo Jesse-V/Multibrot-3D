@@ -42,7 +42,7 @@
 **/
 
 #include "Camera.hpp"
-#include "Light.hpp"
+#include "Lights/Light.hpp"
 #include "Modeling/Shading/Program.hpp"
 #include "Modeling/InstancedModel.hpp"
 #include "glm/gtc/matrix_transform.hpp"
