@@ -27,6 +27,7 @@
 
 #include "Viewer.hpp"
 #include "World/Lights/Fog.hpp"
+#include "World/Lights/PointLight.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedPlane.hpp"
@@ -48,6 +49,17 @@ Viewer::Viewer() :
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+    auto pointLightColor = glm::vec3(255, 228, 206) / glm::vec3(255);
+    auto lightR = 16, lightP = 2;
+    scene_->getLightManager()->addLight(std::make_shared<PointLight>(
+        glm::vec3(8, 8, 1), pointLightColor, lightR, lightP));
+    scene_->getLightManager()->addLight(std::make_shared<PointLight>(
+        glm::vec3(60 - 6, 60 - 6, 1), pointLightColor, lightR, lightP));
+    scene_->getLightManager()->addLight(std::make_shared<PointLight>(
+        glm::vec3(60 - 6, 8, 1), pointLightColor, lightR, lightP));
+    scene_->getLightManager()->addLight(std::make_shared<PointLight>(
+        glm::vec3(8, 60 - 6, 1), pointLightColor, lightR, lightP));
 
     scene_->getLightManager()->addLight(std::make_shared<Fog>());
 
@@ -268,6 +280,7 @@ std::shared_ptr<Camera> Viewer::createCamera()
     camera->translate(glm::vec3(11, 11, 9));
     camera->yaw(-45.0f);
     camera->pitch(-25.0f);
+    //camera->setFarFieldClipDistance(120);
 
     return camera;
 }

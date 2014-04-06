@@ -24,6 +24,7 @@
 \******************************************************************************/
 
 #include "PointLight.hpp"
+#include <sstream>
 
 
 PointLight::PointLight(const glm::vec3& position, const glm::vec3& color,
@@ -59,6 +60,15 @@ SnippetPtr PointLight::getVertexShaderGLSL()
 
 SnippetPtr PointLight::getFragmentShaderGLSL()
 {
+    std::stringstream stream("");
+    stream <<
+        "const vec3 position = vec3(" << position_.x << "," <<
+            position_.y << "," << position_.z << "), " <<
+        "color = vec3(" << color_.x << "," <<
+            color_.y << "," << color_.z << "); " <<
+        "const float lRadius = " << radius_ << ", " <<
+        "lPower  = " << power_ << "; ";
+
     return std::make_shared<ShaderSnippet>(
         R".(
             //PointLight fields
@@ -68,6 +78,19 @@ SnippetPtr PointLight::getFragmentShaderGLSL()
         ).",
         R".(
             //PointLight main method
+            {
+                )." + stream.str() + R".(
+
+                float d = sqrt(pow(vertexWorldFrag.x - position.x, 2) +
+                    pow(vertexWorldFrag.y - position.y, 2) +
+                    pow(vertexWorldFrag.z - position.z, 2));
+
+                if (d < lRadius)
+                {
+                    vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
+                    colors.lightBlend = max(colors.lightBlend, light);
+                }
+            }
         )."
     );
 }

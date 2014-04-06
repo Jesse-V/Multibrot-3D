@@ -81,83 +81,6 @@ std::string ShaderManager::assembleFragmentShaderStr(
         assembleMethods(fragmentSnippets),
         assembleMainBodyCode(fragmentSnippets) + R".(
             //final fragment shader main body code from ShaderManager
-            if (colors.material == vec3(-1))
-                colors.material = vec3(1);
-
-            if (colors.lightBlend == vec3(-1))
-                colors.lightBlend = vec3(1);
-/*
-            //point light in spawn corner
-            {
-                const vec3 position = vec3(8, 8, 1);
-                const vec3 color    = vec3(255, 228, 206) / vec3(255);
-                const float lRadius = 16;
-                const float lPower  = 2;
-
-                float d = sqrt(pow(vertexWorldFrag.x - position.x, 2) +
-                    pow(vertexWorldFrag.y - position.y, 2) +
-                    pow(vertexWorldFrag.z - position.z, 2));
-
-                if (d < lRadius)
-                {
-                    vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
-                    colors.lightBlend = max(colors.lightBlend, light);
-                }
-            }
-
-            //point light in far corner
-            {
-                const vec3 position = vec3(60 - 6, 60 - 6, 1);
-                const vec3 color    = vec3(255, 228, 206) / vec3(255);
-                const float lRadius = 16;
-                const float lPower  = 2;
-
-                float d = sqrt(pow(vertexWorldFrag.x - position.x, 2) +
-                    pow(vertexWorldFrag.y - position.y, 2) +
-                    pow(vertexWorldFrag.z - position.z, 2));
-
-                if (d < lRadius)
-                {
-                    vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
-                    colors.lightBlend = max(colors.lightBlend, light);
-                }
-            }
-
-            //point light in right corner
-            {
-                const vec3 position = vec3(60 - 6, 8, 1);
-                const vec3 color    = vec3(255, 228, 206) / vec3(255);
-                const float lRadius = 16;
-                const float lPower  = 2;
-
-                float d = sqrt(pow(vertexWorldFrag.x - position.x, 2) +
-                    pow(vertexWorldFrag.y - position.y, 2) +
-                    pow(vertexWorldFrag.z - position.z, 2));
-
-                if (d < lRadius)
-                {
-                    vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
-                    colors.lightBlend = max(colors.lightBlend, light);
-                }
-            }
-
-            //point light in left corner
-            {
-                const vec3 position = vec3(8, 60 - 6, 1);
-                const vec3 color    = vec3(255, 228, 206) / vec3(255);
-                const float lRadius = 16;
-                const float lPower  = 2;
-
-                float d = sqrt(pow(vertexWorldFrag.x - position.x, 2) +
-                    pow(vertexWorldFrag.y - position.y, 2) +
-                    pow(vertexWorldFrag.z - position.z, 2));
-
-                if (d < lRadius)
-                {
-                    vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
-                    colors.lightBlend = max(colors.lightBlend, light);
-                }
-            }
 
             //flashlight
             {
@@ -172,21 +95,6 @@ std::string ShaderManager::assembleFragmentShaderStr(
                 }
             }
 
-            //fog
-            {
-                const float minD = 80;
-                const float maxD = 120;
-                float d = sqrt(pow(vertexProjectedFrag.x, 2) +
-                    pow(vertexProjectedFrag.y, 2) +
-                    pow(vertexProjectedFrag.z, 2));
-
-                if (d >= minD)
-                {
-                    vec3 fog = vec3(1 - (d - minD) / (maxD - minD));
-                    colors.lightBlend *= fog;
-                }
-            }
-*/
             vec3 lighting = ambientLight * colors.lightBlend;
             vec3 color = colors.material * lighting;
             gl_FragColor = vec4(color, 1);

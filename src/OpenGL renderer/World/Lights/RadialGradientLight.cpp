@@ -26,6 +26,9 @@
 #include "RadialGradientLight.hpp"
 
 
+//TODO: NOT IMPLEMENTED
+
+
 SnippetPtr RadialGradientLight::getVertexShaderGLSL()
 {
     return std::make_shared<ShaderSnippet>(

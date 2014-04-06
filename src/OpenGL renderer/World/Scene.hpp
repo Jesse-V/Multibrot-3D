@@ -78,9 +78,9 @@ class Scene
         };
 
     private:
+        std::shared_ptr<Camera> camera_;
         std::vector<Renderable> renderables_;
         std::shared_ptr<LightManager> lightManager_;
-        std::shared_ptr<Camera> camera_;
 };
 
 

@@ -164,8 +164,8 @@ SnippetPtr Scene::getFragmentShaderGLSL()
         R".(
             //Scene main method code
             Colors colors;
-            colors.material = vec3(-1); //init to invalid if not needed
-            colors.lightBlend = vec3(-1);
+            colors.material = vec3(1);
+            colors.lightBlend = vec3(1);
         )."
     );
 }
