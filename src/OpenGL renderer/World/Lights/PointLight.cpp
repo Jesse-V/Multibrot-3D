@@ -95,18 +95,19 @@ SnippetPtr PointLight::getVertexShaderGLSL()
 
 SnippetPtr PointLight::getFragmentShaderGLSL()
 {
-    std::stringstream stream("");
-    stream <<
-        "const vec3 position = vec3(" << position_.first.x << "," <<
-            position_.first.y << "," << position_.first.z << "), " <<
-        "color = vec3(" << color_.first.x << "," <<
-            color_.first.y << "," << color_.first.z << "); " <<
-        "const float lRadius = " << radius_.first << ", " <<
-        "lPower  = " << power_.first << "; ";
+    const auto pos = position_.second.name_;
+    const auto col = color_.second.name_;
+    const auto r = radius_.second.name_;
+    const auto pr = power_.second.name_;
+
+    std::stringstream fields("");
+    fields << "uniform vec3 " << pos << ", " << col <<
+        "; uniform float " << r << ", " << pr << ";";
 
     return std::make_shared<ShaderSnippet>(
         R".(
             //PointLight fields
+            )." + fields.str() + R".(
         ).",
         R".(
             //PointLight methods
@@ -114,12 +115,10 @@ SnippetPtr PointLight::getFragmentShaderGLSL()
         R".(
             //PointLight main method
             {
-                )." + stream.str() + R".(
-
-                float d = length(vertexWorldFrag - position);
-                if (d < lRadius)
+                float d = length(vertexWorldFrag - )." + pos + R".();
+                if (d < )." + r + R".()
                 {
-                    vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
+                    vec3 light = vec3(()." + r + R".( - d) * )." + pr + R".( / )." + r + R".() * )." + col + R".(;
                     colors.lightBlend = max(colors.lightBlend, light);
                 }
             }
@@ -157,6 +156,7 @@ GLint PointLight::find(const VarData& varData, GLuint handle)
 void PointLight::setPosition(const glm::vec3& newPos)
 {
     position_.first = newPos;
+    position_.second.outOfSync_ = true;
 }
 
 
@@ -164,6 +164,7 @@ void PointLight::setPosition(const glm::vec3& newPos)
 void PointLight::setColor(const glm::vec3& newColor)
 {
     color_.first = newColor;
+    color_.second.outOfSync_ = true;
 }
 
 
@@ -171,6 +172,7 @@ void PointLight::setColor(const glm::vec3& newColor)
 void PointLight::setPower(float power)
 {
     power_.first = power;
+    power_.second.outOfSync_ = true;
 }
 
 
@@ -178,6 +180,7 @@ void PointLight::setPower(float power)
 void PointLight::setRadius(float radius)
 {
     radius_.first = radius;
+    radius_.second.outOfSync_ = true;
 }
 
 

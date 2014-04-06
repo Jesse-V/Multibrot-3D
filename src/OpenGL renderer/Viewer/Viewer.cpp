@@ -73,7 +73,7 @@ void Viewer::addLights()
         glm::vec3(8, 60 - 6, 1), pointLightColor, lightR, lightP));
 
     //add fog effect
-    scene_->getLightManager()->addLight(std::make_shared<Fog>());
+    scene_->getLightManager()->addLight(std::make_shared<Fog>(80, 120));
 }
 
 
@@ -226,9 +226,8 @@ void Viewer::addFractal()
         BufferList list = { std::make_shared<ColorBuffer>(vertexColors) };
         auto model = std::make_shared<InstancedModel>(mesh, *boxType.second, list);
 
-
         model->unify(glm::rotate(glm::translate(POS), 0.0f, glm::vec3(0, 1, 0)));
-        model->setAffectedByLight(false);
+        //model->setAffectedByLight(false);
         boxTypes_.push_back(model);
         scene_->addModel(model); //add to Scene and save
     }
@@ -306,14 +305,31 @@ void Viewer::update(int deltaTime)
 
 void Viewer::animate(int deltaTime)
 {
+    static float t = 0;
+    static const float PI = 3.1415926f, ROT_SPEED = 0.0075f;
+    static const float LMAX_P = 2.1f, LMIN_P = 1.3f, L_RATE = 0.001f;
+
     bool animationHappened = false;
 
     for (auto boxType : boxTypes_)
     {
         auto matrix = boxType->getModelMatrix(0);
-        matrix = glm::rotate(matrix, 0.15f, glm::vec3(1, 0, 0));
+        matrix = glm::rotate(matrix, deltaTime * ROT_SPEED, glm::vec3(1, 0, 0));
         boxType->setModelMatrix(0, matrix);
     }
+
+    auto lights = scene_->getLightManager()->getLights();
+    auto lA = dynamic_cast<PointLight*>(lights[0].get());
+    auto lB = dynamic_cast<PointLight*>(lights[1].get());
+    auto lC = dynamic_cast<PointLight*>(lights[2].get());
+    auto lD = dynamic_cast<PointLight*>(lights[3].get());
+
+    lA->setPower(std::abs(std::sin(t + 0     )) * (LMAX_P - LMIN_P) + LMIN_P);
+    lB->setPower(std::abs(std::sin(t + PI / 1)) * (LMAX_P - LMIN_P) + LMIN_P);
+    lC->setPower(std::abs(std::sin(t + PI / 2)) * (LMAX_P - LMIN_P) + LMIN_P);
+    lD->setPower(std::abs(std::sin(t + PI / 4)) * (LMAX_P - LMIN_P) + LMIN_P);
+
+    t += deltaTime * L_RATE;
 
     animationHappened = true;
 
