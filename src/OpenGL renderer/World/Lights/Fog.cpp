@@ -63,14 +63,12 @@ SnippetPtr Fog::getFragmentShaderGLSL()
             {
                 const float minD = )." << min_ << R".(;
                 const float maxD = )." << max_ << R".(;
-                float d = sqrt(pow(vertexProjectedFrag.x, 2) +
-                    pow(vertexProjectedFrag.y, 2) +
-                    pow(vertexProjectedFrag.z, 2));
+                float d = length(vertexProjectedFrag);
 
                 if (d >= minD)
                 {
                     vec3 fog = vec3(1 - (d - minD) / (maxD - minD));
-                    colors.lightBlend = fog;
+                    colors.lightBlend *= fog;
                 }
             }
         ).";

@@ -41,8 +41,12 @@ Scene::Scene(const std::shared_ptr<Camera>& camera) :
 
 void Scene::addModel(const InstancedModelPtr& model)
 {
-    addModel(model, ShaderManager::createProgram(model,
-        getVertexShaderGLSL(), getFragmentShaderGLSL(), lightManager_));
+    if (model->isAffectedByLight())
+        addModel(model, ShaderManager::createProgram(model,
+            getVertexShaderGLSL(), getFragmentShaderGLSL(), lightManager_));
+    else
+        addModel(model, ShaderManager::createProgram(model,
+            getVertexShaderGLSL(), getFragmentShaderGLSL(), NULL));
 }
 
 

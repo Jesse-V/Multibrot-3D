@@ -31,7 +31,7 @@
 
 
 InstancedModel::InstancedModel(const std::shared_ptr<Mesh>& mesh) :
-    mesh_(mesh), cachedHandle_(0), isVisible_(true)
+    mesh_(mesh), cachedHandle_(0), isVisible_(true), lightApplicable_(true)
 {}
 
 

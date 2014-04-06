@@ -24,19 +24,54 @@
 \******************************************************************************/
 
 #include "PointLight.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include <sstream>
+#include <iostream>
+
+int PointLight::instanceID_ = 0;
 
 
 PointLight::PointLight(const glm::vec3& position, const glm::vec3& color,
-                    float radius, float power) :
-    position_(position), color_(color), radius_(radius), power_(power)
-{}
+                    float radius, float power)
+{
+    instanceID_++;
+    position_ = std::make_pair(position, VarData("lPosition" + std::to_string(instanceID_)));
+    color_    = std::make_pair(color,    VarData("lColor"    + std::to_string(instanceID_)));
+    radius_   = std::make_pair(radius,   VarData("lRadius"   + std::to_string(instanceID_)));
+    power_    = std::make_pair(power,    VarData("lPower"    + std::to_string(instanceID_)));
+}
 
 
 
 void PointLight::sync(GLuint handle)
 {
+    if (position_.second.outOfSync_)
+    {
+        auto loc = find(position_.second, handle);
+        glUniform3fv(loc, 1, glm::value_ptr(position_.first));
+        position_.second.outOfSync_ = false;
+    }
 
+    if (color_.second.outOfSync_)
+    {
+        auto loc = find(color_.second, handle);
+        glUniform3fv(loc, 1, glm::value_ptr(color_.first));
+        color_.second.outOfSync_ = false;
+    }
+
+    if (radius_.second.outOfSync_)
+    {
+        auto loc = find(radius_.second, handle);
+        glUniform1f(loc, radius_.first);
+        radius_.second.outOfSync_ = false;
+    }
+
+    if (power_.second.outOfSync_)
+    {
+        auto loc = find(power_.second, handle);
+        glUniform1f(loc, power_.first);
+        power_.second.outOfSync_ = false;
+    }
 }
 
 
@@ -62,12 +97,12 @@ SnippetPtr PointLight::getFragmentShaderGLSL()
 {
     std::stringstream stream("");
     stream <<
-        "const vec3 position = vec3(" << position_.x << "," <<
-            position_.y << "," << position_.z << "), " <<
-        "color = vec3(" << color_.x << "," <<
-            color_.y << "," << color_.z << "); " <<
-        "const float lRadius = " << radius_ << ", " <<
-        "lPower  = " << power_ << "; ";
+        "const vec3 position = vec3(" << position_.first.x << "," <<
+            position_.first.y << "," << position_.first.z << "), " <<
+        "color = vec3(" << color_.first.x << "," <<
+            color_.first.y << "," << color_.first.z << "); " <<
+        "const float lRadius = " << radius_.first << ", " <<
+        "lPower  = " << power_.first << "; ";
 
     return std::make_shared<ShaderSnippet>(
         R".(
@@ -81,10 +116,7 @@ SnippetPtr PointLight::getFragmentShaderGLSL()
             {
                 )." + stream.str() + R".(
 
-                float d = sqrt(pow(vertexWorldFrag.x - position.x, 2) +
-                    pow(vertexWorldFrag.y - position.y, 2) +
-                    pow(vertexWorldFrag.z - position.z, 2));
-
+                float d = length(vertexWorldFrag - position);
                 if (d < lRadius)
                 {
                     vec3 light = vec3((lRadius - d) * lPower / lRadius) * color;
@@ -97,56 +129,81 @@ SnippetPtr PointLight::getFragmentShaderGLSL()
 
 
 
+GLint PointLight::find(const VarData& varData, GLuint handle)
+{
+    bool found = false;
+    GLint location = (GLint)NULL;
+    for (auto bridge : cache_)
+    {
+        if (bridge.handle_ == handle && bridge.varName_ == varData.name_)
+        {
+            location = bridge.location_;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        location = glGetUniformLocation(handle, varData.name_.c_str());
+        cache_.push_back(VarBridge(handle, varData.name_, location));
+    }
+
+    return location;
+}
+
+
+
 void PointLight::setPosition(const glm::vec3& newPos)
 {
-    position_ = newPos;
+    position_.first = newPos;
 }
 
 
 
 void PointLight::setColor(const glm::vec3& newColor)
 {
-    color_ = newColor;
+    color_.first = newColor;
 }
 
 
 
 void PointLight::setPower(float power)
 {
-    power_ = power;
+    power_.first = power;
 }
 
 
 
 void PointLight::setRadius(float radius)
 {
-    radius_ = radius;
+    radius_.first = radius;
 }
 
 
 
 glm::vec3 PointLight::getPosition() const
 {
-    return position_;
+    return position_.first;
 }
 
 
 
 glm::vec3 PointLight::getColor() const
 {
-    return color_;
+    return color_.first;
 }
 
 
 
 float PointLight::getPower() const
 {
-    return power_;
+    return power_.first;
 }
 
 
 
 float PointLight::getRadius() const
 {
-    return radius_;
+    return radius_.first;
 }

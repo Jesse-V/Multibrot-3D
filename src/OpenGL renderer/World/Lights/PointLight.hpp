@@ -27,6 +27,7 @@
 #define POINT_LIGHT
 
 #include "Light.hpp"
+#include <vector>
 
 class PointLight : public Light
 {
@@ -53,8 +54,41 @@ class PointLight : public Light
         float getRadius() const;
 
     private:
-        glm::vec3 position_, color_;
-        float radius_, power_;
+        struct VarData
+        {
+            VarData() :
+                outOfSync_(true)
+            {}
+
+            VarData(std::string name) :
+                name_(name), outOfSync_(true)
+            {}
+
+            std::string name_;
+            bool outOfSync_;
+        };
+
+        GLint find(const VarData& varData, GLuint handle);
+
+        static int instanceID_;
+        std::pair<glm::vec3, VarData> position_;
+        std::pair<glm::vec3, VarData> color_;
+        std::pair<float,     VarData> radius_;
+        std::pair<float,     VarData> power_;
+
+        struct VarBridge
+        {
+            VarBridge(GLuint handle, std::string name, GLint loc) :
+                handle_(handle), varName_(name), location_(loc)
+            {}
+
+            GLuint handle_;
+            std::string varName_;
+            GLint location_;
+        };
+
+        std::vector<VarBridge> cache_;
+        //std::unordered_map<std::pair<GLuint, std::string>, GLint> cache_;
 };
 
 #endif

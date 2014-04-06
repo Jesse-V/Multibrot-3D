@@ -35,8 +35,11 @@ ProgramPtr ShaderManager::createProgram(
     const SnippetPtr& sceneFragmentShader, const LightManagerPtr& lightMngr
 )
 {
-    std::cout << "Creating vertex and fragment shaders for Model"
-        << " with " << lightMngr->getLights().size() << " light(s)... ";
+    if (lightMngr == NULL)
+        std::cout << "Creating vertex & fragment shaders for light-immune model... ";
+    else
+        std::cout << "Creating vertex and fragment shaders for model"
+            << " with " << lightMngr->getLights().size() << " light(s)... ";
 
     auto buffers = model->getOptionalDataBuffers();
     auto vertexShaderStr = assembleVertexShaderStr(buffers,
@@ -110,13 +113,14 @@ std::vector<SnippetPtr> ShaderManager::assembleVertexSnippets(
 )
 {
     std::vector<SnippetPtr> vertexSnippets;
-    vertexSnippets.reserve(1 + buffers.size());
+    vertexSnippets.reserve(2 + buffers.size());
     vertexSnippets.push_back(sceneVertexShader);
 
     for (auto buffer : buffers)
         vertexSnippets.push_back(buffer->getVertexShaderGLSL());
 
-    vertexSnippets.push_back(lightMngr->getVertexShaderGLSL());
+    if (lightMngr != NULL)
+        vertexSnippets.push_back(lightMngr->getVertexShaderGLSL());
 
     return vertexSnippets;
 }
@@ -129,13 +133,14 @@ std::vector<SnippetPtr> ShaderManager::assembleFragmentSnippets(
 )
 {
     std::vector<SnippetPtr> fragmentSnippets;
-    fragmentSnippets.reserve(1 + buffers.size());
+    fragmentSnippets.reserve(2 + buffers.size());
     fragmentSnippets.push_back(sceneFragmentShader);
 
     for (auto buffer : buffers)
         fragmentSnippets.push_back(buffer->getFragmentShaderGLSL());
 
-    fragmentSnippets.push_back(lightMngr->getFragmentShaderGLSL());
+    if (lightMngr != NULL)
+        fragmentSnippets.push_back(lightMngr->getFragmentShaderGLSL());
 
     return fragmentSnippets;
 }

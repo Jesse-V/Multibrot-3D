@@ -42,6 +42,7 @@ class Viewer
 
     private:
         Viewer();
+        void addLights();
         void reportFPS();
         void addModels();
         void addBellCurveBlocks();

@@ -50,6 +50,17 @@ Viewer::Viewer() :
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
+    addLights();
+    addModels();
+    user_->grabPointer();
+    reportFPS();
+}
+
+
+
+void Viewer::addLights()
+{
+    //add point lights on corners of plane
     auto pointLightColor = glm::vec3(255, 228, 206) / glm::vec3(255);
     auto lightR = 16, lightP = 2;
     scene_->getLightManager()->addLight(std::make_shared<PointLight>(
@@ -61,11 +72,8 @@ Viewer::Viewer() :
     scene_->getLightManager()->addLight(std::make_shared<PointLight>(
         glm::vec3(8, 60 - 6, 1), pointLightColor, lightR, lightP));
 
+    //add fog effect
     scene_->getLightManager()->addLight(std::make_shared<Fog>());
-
-    addModels();
-    user_->grabPointer();
-    reportFPS();
 }
 
 
@@ -220,6 +228,7 @@ void Viewer::addFractal()
 
 
         model->unify(glm::rotate(glm::translate(POS), 0.0f, glm::vec3(0, 1, 0)));
+        model->setAffectedByLight(false);
         boxTypes_.push_back(model);
         scene_->addModel(model); //add to Scene and save
     }
