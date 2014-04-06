@@ -26,9 +26,9 @@
 #ifndef POINT_LIGHT
 #define POINT_LIGHT
 
-#include "NewLight.hpp"
+#include "Light.hpp"
 
-class PointLight : public NewLight
+class PointLight : public Light
 {
     public:
         PointLight(

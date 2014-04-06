@@ -26,9 +26,9 @@
 #ifndef CYLINDER_LIGHT
 #define CYLINDER_LIGHT
 
-#include "NewLight.hpp"
+#include "Light.hpp"
 
-class CylinderLight : public NewLight
+class CylinderLight : public Light
 {
     public:
         virtual SnippetPtr getVertexShaderGLSL();

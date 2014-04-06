@@ -99,6 +99,13 @@ std::shared_ptr<Camera> Scene::getCamera()
 
 
 
+std::shared_ptr<LightManager> Scene::getLightManager()
+{
+    return lightManager_;
+}
+
+
+
 int Scene::getModelCount()
 {
     return (int)renderables_.size();

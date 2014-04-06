@@ -86,7 +86,7 @@ std::string ShaderManager::assembleFragmentShaderStr(
 
             if (colors.lightBlend == vec3(-1))
                 colors.lightBlend = vec3(1);
-
+/*
             //point light in spawn corner
             {
                 const vec3 position = vec3(8, 8, 1);
@@ -186,7 +186,7 @@ std::string ShaderManager::assembleFragmentShaderStr(
                     colors.lightBlend *= fog;
                 }
             }
-
+*/
             vec3 lighting = ambientLight * colors.lightBlend;
             vec3 color = colors.material * lighting;
             gl_FragColor = vec4(color, 1);
@@ -202,15 +202,13 @@ std::vector<SnippetPtr> ShaderManager::assembleVertexSnippets(
 )
 {
     std::vector<SnippetPtr> vertexSnippets;
-    vertexSnippets.reserve(1 + buffers.size() + lightMngr->getLights().size());
+    vertexSnippets.reserve(1 + buffers.size());
     vertexSnippets.push_back(sceneVertexShader);
 
     for (auto buffer : buffers)
         vertexSnippets.push_back(buffer->getVertexShaderGLSL());
 
-    //TODO: light merging
-    //if (lights.size() > 0) //only need one instance of light code
-    //    vertexSnippets.push_back(lights[0]->getVertexShaderGLSL());
+    vertexSnippets.push_back(lightMngr->getVertexShaderGLSL());
 
     return vertexSnippets;
 }
@@ -223,15 +221,13 @@ std::vector<SnippetPtr> ShaderManager::assembleFragmentSnippets(
 )
 {
     std::vector<SnippetPtr> fragmentSnippets;
-    fragmentSnippets.reserve(1 + buffers.size() + lightMngr->getLights().size());
+    fragmentSnippets.reserve(1 + buffers.size());
     fragmentSnippets.push_back(sceneFragmentShader);
 
     for (auto buffer : buffers)
         fragmentSnippets.push_back(buffer->getFragmentShaderGLSL());
 
-    //TODO: light merging
-    //if (lights.size() > 0) //only need one instance of light code
-    //    fragmentSnippets.push_back(lights[0]->getFragmentShaderGLSL());
+    fragmentSnippets.push_back(lightMngr->getFragmentShaderGLSL());
 
     return fragmentSnippets;
 }

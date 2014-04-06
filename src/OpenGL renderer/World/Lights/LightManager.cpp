@@ -26,6 +26,7 @@
 #include "LightManager.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <GL/glew.h>
+#include <sstream>
 #include <iostream>
 
 
@@ -36,7 +37,7 @@ LightManager::LightManager()
 
 
 
-void LightManager::addLight(const std::shared_ptr<NewLight>& light)
+void LightManager::addLight(const std::shared_ptr<Light>& light)
 {
     lights_.push_back(light);
     std::cout << "Successfully added a Light." << std::endl;
@@ -79,16 +80,33 @@ glm::vec3 LightManager::getAmbientLight()
 
 SnippetPtr LightManager::getVertexShaderGLSL()
 {
+    std::vector<SnippetPtr> vertexSnippets;
+    vertexSnippets.reserve(lights_.size());
+    for (auto light : lights_)
+        vertexSnippets.push_back(light->getVertexShaderGLSL());
+
+    std::stringstream fields("");
+    for (auto snippet : vertexSnippets)
+        fields << snippet->getFields();
+
+    std::stringstream methods("");
+    for (auto snippet : vertexSnippets)
+        methods << snippet->getMethods();
+
+    std::stringstream main("");
+    for (auto snippet : vertexSnippets)
+        main << snippet->getMainBodyCode();
+
     return std::make_shared<ShaderSnippet>(
         R".(
             //LightManager fields
-        ).",
+        )." + fields.str(),
         R".(
             //LightManager methods
-        ).",
+        )." + methods.str(),
         R".(
             //LightManager main method code
-        )."
+        )." + main.str()
     );
 }
 
@@ -96,15 +114,32 @@ SnippetPtr LightManager::getVertexShaderGLSL()
 
 SnippetPtr LightManager::getFragmentShaderGLSL()
 {
+    std::vector<SnippetPtr> fragmentSnippets;
+    fragmentSnippets.reserve(lights_.size());
+    for (auto light : lights_)
+        fragmentSnippets.push_back(light->getFragmentShaderGLSL());
+
+    std::stringstream fields("");
+    for (auto snippet : fragmentSnippets)
+        fields << snippet->getFields();
+
+    std::stringstream methods("");
+    for (auto snippet : fragmentSnippets)
+        methods << snippet->getMethods();
+
+    std::stringstream main("");
+    for (auto snippet : fragmentSnippets)
+        main << snippet->getMainBodyCode();
+
     return std::make_shared<ShaderSnippet>(
         R".(
             //LightManager fields
-        ).",
+        )." + fields.str(),
         R".(
             //LightManager methods
-        ).",
+        )." + methods.str(),
         R".(
-            //LightManager main method
-        )."
+            //LightManager main method code
+        )." + main.str()
     );
 }

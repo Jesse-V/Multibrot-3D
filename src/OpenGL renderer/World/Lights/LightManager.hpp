@@ -27,18 +27,18 @@
 #define LIGHT_MANAGER
 
 #include "Modeling/Shading/ShaderUtilizer.hpp"
-#include "NewLight.hpp"
+#include "Light.hpp"
 #include <vector>
 #include <memory>
 
-typedef std::vector<std::shared_ptr<NewLight>> LightList;
+typedef std::vector<std::shared_ptr<Light>> LightList;
 
 class LightManager : public ShaderUtilizer
 {
     public:
         LightManager();
 
-        void addLight(const std::shared_ptr<NewLight>& light);
+        void addLight(const std::shared_ptr<Light>& light);
         LightList getLights();
         void sync(GLuint handle, GLint ambientLightUniform);
         void setAmbientLight(const glm::vec3& rgb);

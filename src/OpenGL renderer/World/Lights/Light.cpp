@@ -23,26 +23,17 @@
                          jvictors@jessevictors.com
 \******************************************************************************/
 
-#ifndef NEW_LIGHT //TODO: this should be just named "LIGHT"
-#define NEW_LIGHT
+#include "Light.hpp"
 
-#include "Modeling/Shading/ShaderUtilizer.hpp"
-#include <GL/glew.h>
-#include "glm/glm.hpp"
 
-class NewLight : public ShaderUtilizer
+void Light::setEmitting(bool emitting)
 {
-    public:
-        void setEmitting(bool emitting);
-        bool isEmitting() const;
+    emitting_ = emitting;
+}
 
-        virtual void sync(GLuint handle) = 0;
 
-        virtual SnippetPtr getVertexShaderGLSL() = 0;
-        virtual SnippetPtr getFragmentShaderGLSL() = 0;
 
-    private:
-        bool emitting_;
-};
-
-#endif
+bool Light::isEmitting() const
+{
+    return emitting_;
+}

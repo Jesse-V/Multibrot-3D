@@ -78,7 +78,7 @@ add_executable(MultibrotRenderer
     World/Camera.cpp
     World/Lights/LightManager.cpp
     World/Lights/Fog.cpp
-    World/Lights/NewLight.cpp
+    World/Lights/Light.cpp
     World/Lights/PointLight.cpp
     World/Lights/RadialGradientLight.cpp
     World/Lights/CylinderLight.cpp

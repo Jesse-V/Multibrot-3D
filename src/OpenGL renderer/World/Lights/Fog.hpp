@@ -26,12 +26,14 @@
 #ifndef FOG
 #define FOG
 
-#include "NewLight.hpp"
+#include "Light.hpp"
 
-class Fog : public NewLight
+class Fog : public Light
 {
     public:
         Fog(float minDistance = 70, float maxDistance = 110);
+
+        virtual void sync(GLuint handle);
 
         virtual SnippetPtr getVertexShaderGLSL();
         virtual SnippetPtr getFragmentShaderGLSL();

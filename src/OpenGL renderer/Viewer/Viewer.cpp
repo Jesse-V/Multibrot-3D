@@ -26,6 +26,7 @@
 #define _GLIBCXX_USE_NANOSLEEP
 
 #include "Viewer.hpp"
+#include "World/Lights/Fog.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedPlane.hpp"
@@ -47,6 +48,8 @@ Viewer::Viewer() :
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+    scene_->getLightManager()->addLight(std::make_shared<Fog>());
 
     addModels();
     user_->grabPointer();

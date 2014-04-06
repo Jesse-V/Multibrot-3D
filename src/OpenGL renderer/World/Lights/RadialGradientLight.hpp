@@ -26,9 +26,9 @@
 #ifndef RADIAL_GRADIENT_LIGHT
 #define RADIAL_GRADIENT_LIGHT
 
-#include "NewLight.hpp"
+#include "Light.hpp"
 
-class RadialGradientLight : public NewLight
+class RadialGradientLight : public Light
 {
     public:
         virtual SnippetPtr getVertexShaderGLSL();

@@ -33,6 +33,11 @@ Fog::Fog(float minDistance, float maxDistance) :
 
 
 
+void Fog::sync(GLuint handle)
+{}
+
+
+
 SnippetPtr Fog::getVertexShaderGLSL()
 {
     return std::make_shared<ShaderSnippet>(
@@ -55,16 +60,18 @@ SnippetPtr Fog::getFragmentShaderGLSL()
     std::stringstream mainMethodSS("");
     mainMethodSS << R".(
             //Fog main method code
-            const float minD = )." << min_ << R".(;
-            const float maxD = )." << max_ << R".(;
-            float d = sqrt(pow(vertexProjectedFrag.x, 2) +
-                pow(vertexProjectedFrag.y, 2) +
-                pow(vertexProjectedFrag.z, 2));
-
-            if (d >= minD)
             {
-                vec3 fog = vec3(1 - (d - minD) / (maxD - minD));
-                colors.lightBlend = fog;
+                const float minD = )." << min_ << R".(;
+                const float maxD = )." << max_ << R".(;
+                float d = sqrt(pow(vertexProjectedFrag.x, 2) +
+                    pow(vertexProjectedFrag.y, 2) +
+                    pow(vertexProjectedFrag.z, 2));
+
+                if (d >= minD)
+                {
+                    vec3 fog = vec3(1 - (d - minD) / (maxD - minD));
+                    colors.lightBlend = fog;
+                }
             }
         ).";
 

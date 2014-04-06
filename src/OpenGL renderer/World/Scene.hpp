@@ -59,6 +59,7 @@ class Scene
         float render();
 
         std::shared_ptr<Camera> getCamera();
+        std::shared_ptr<LightManager> getLightManager();
         int getModelCount();
 
         virtual SnippetPtr getVertexShaderGLSL();
