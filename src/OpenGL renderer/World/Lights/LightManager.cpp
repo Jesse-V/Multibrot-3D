@@ -26,7 +26,23 @@
 #include "LightManager.hpp"
 #include <GL/glew.h>
 
+
+void LightManager::addLight(const std::shared_ptr<NewLight>& light)
+{
+    lights_.push_back(light);
+}
+
+
+
+LightList LightManager::getLights()
+{
+    return lights_;
+}
+
+
+
 void LightManager::sync(GLuint handle)
 {
-
+    for (auto light : lights_)
+        sync(handle);
 }

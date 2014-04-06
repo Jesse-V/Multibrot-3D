@@ -37,37 +37,3 @@ bool NewLight::isEmitting() const
 {
     return emitting_;
 }
-
-
-
-SnippetPtr NewLight::getVertexShaderGLSL()
-{
-    return std::make_shared<ShaderSnippet>(
-        R".(
-            //NewLight fields
-        ).",
-        R".(
-            //NewLight methods
-        ).",
-        R".(
-            //NewLight main method code
-        )."
-    );
-}
-
-
-
-SnippetPtr NewLight::getFragmentShaderGLSL()
-{
-    return std::make_shared<ShaderSnippet>(
-        R".(
-            //NewLight fields
-        ).",
-        R".(
-            //NewLight methods
-        ).",
-        R".(
-            //NewLight main
-        )."
-    );
-}

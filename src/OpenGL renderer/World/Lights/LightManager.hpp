@@ -38,6 +38,8 @@ class LightManager : public ShaderUtilizer
     public:
         LightManager();
 
+        void addLight(const std::shared_ptr<NewLight>& light);
+        LightList getLights();
         void sync(GLuint handle);
 
         virtual SnippetPtr getVertexShaderGLSL();

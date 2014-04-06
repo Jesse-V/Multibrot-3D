@@ -26,9 +26,9 @@
 #ifndef FOG
 #define FOG
 
-#include "Modeling/Shading/ShaderUtilizer.hpp"
+#include "NewLight.hpp"
 
-class Fog : public ShaderUtilizer
+class Fog : public NewLight
 {
     public:
         Fog(float minDistance = 70, float maxDistance = 110);

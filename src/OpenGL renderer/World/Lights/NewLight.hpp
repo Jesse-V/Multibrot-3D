@@ -28,6 +28,7 @@
 
 #include "Modeling/Shading/ShaderUtilizer.hpp"
 #include <GL/glew.h>
+#include "glm/glm.hpp"
 
 class NewLight : public ShaderUtilizer
 {
@@ -35,10 +36,10 @@ class NewLight : public ShaderUtilizer
         void setEmitting(bool emitting);
         bool isEmitting() const;
 
-        void sync(GLuint handle, std::size_t lightID);
+        virtual void sync(GLuint handle) = 0;
 
-        virtual SnippetPtr getVertexShaderGLSL();
-        virtual SnippetPtr getFragmentShaderGLSL();
+        virtual SnippetPtr getVertexShaderGLSL() = 0;
+        virtual SnippetPtr getFragmentShaderGLSL() = 0;
 
     private:
         bool emitting_;

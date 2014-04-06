@@ -162,7 +162,7 @@ std::string ShaderManager::assembleFragmentShaderStr(
             //flashlight
             {
                 float r = sqrt(pow(vertexProjectedFrag.x, 2) +
-                pow(vertexProjectedFrag.y, 2));
+                    pow(vertexProjectedFrag.y, 2));
 
                 float beamR = 3;
                 if (r < beamR)
