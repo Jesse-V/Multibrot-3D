@@ -36,38 +36,40 @@
     CPU-side code is then free to hook into GLSL variables under this Program.
     The ShaderManager classes makes heavy use of typedefs to reduce the length
     of templatized types. Refer to Program.hpp, ShaderUtilizer.hpp, and
-    /World/Light.hpp for full typedef declarations if they are not obvious.
+    /World/LightManager.hpp for full typedef declarations if they are not obvious.
 **/
 
 #include "Modeling/InstancedModel.hpp"
 #include "Modeling/DataBuffers/DataBuffer.hpp"
-#include "World/Lights/Light.hpp"
+#include "World/Lights/LightManager.hpp"
 #include "Program.hpp"
 #include <memory>
 #include <vector>
 #include <GL/glut.h>
 
+typedef std::shared_ptr<LightManager> LightManagerPtr;
+
 class ShaderManager
 {
     public:
-        static ProgramPtr createProgram(const std::shared_ptr<InstancedModel>& obj,
+        static ProgramPtr createProgram(const InstancedModelPtr& obj,
             const SnippetPtr& sceneVertexShader,
-            const SnippetPtr& sceneFragmentShader, const LightList& lights);
+            const SnippetPtr& sceneFragmentShader, const LightManagerPtr& lightMngr);
 
     private:
         static std::vector<SnippetPtr> assembleVertexSnippets(
             const SnippetPtr& sceneVertexShader,
-            const BufferList& buffers, const LightList& lights);
+            const BufferList& buffers, const LightManagerPtr& lightMngr);
         static std::string assembleVertexShaderStr(
             const BufferList& buffers, const SnippetPtr& sceneVertexShader,
-            const LightList& lights);
+            const LightManagerPtr& lightMngr);
 
         static std::vector<SnippetPtr> assembleFragmentSnippets(
             const SnippetPtr& sceneFragmentShader,
-            const BufferList& buffers, const LightList& lights);
+            const BufferList& buffers, const LightManagerPtr& lightMngr);
         static std::string assembleFragmentShaderStr(
             const BufferList& buffers, const SnippetPtr& sceneFragmentShader,
-            const LightList& lights);
+            const LightManagerPtr& lightMngr);
 
         static std::string assembleFields(const SnippetList& snippets);
         static std::string assembleMethods(const SnippetList& snippets);

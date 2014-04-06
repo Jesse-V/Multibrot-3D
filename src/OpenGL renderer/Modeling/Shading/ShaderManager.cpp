@@ -31,18 +31,18 @@
 
 
 ProgramPtr ShaderManager::createProgram(
-    const std::shared_ptr<InstancedModel>& model, const SnippetPtr& sceneVertexShader,
-    const SnippetPtr& sceneFragmentShader, const LightList& lights
+    const InstancedModelPtr& model, const SnippetPtr& sceneVertexShader,
+    const SnippetPtr& sceneFragmentShader, const LightManagerPtr& lightMngr
 )
 {
     std::cout << "Creating vertex and fragment shaders for Model"
-        << " with " << lights.size() << " light(s)... ";
+        << " with " << lightMngr->getLights().size() << " light(s)... ";
 
     auto buffers = model->getOptionalDataBuffers();
     auto vertexShaderStr = assembleVertexShaderStr(buffers,
-                                              sceneVertexShader, lights);
+                                              sceneVertexShader, lightMngr);
     auto fragmentShaderStr = assembleFragmentShaderStr(buffers,
-                                              sceneFragmentShader, lights);
+                                              sceneFragmentShader, lightMngr);
 
     std::cout << "done." << std::endl;
     return cs5400::makeProgram(
@@ -55,11 +55,11 @@ ProgramPtr ShaderManager::createProgram(
 
 std::string ShaderManager::assembleVertexShaderStr(
     const BufferList& buffers, const SnippetPtr& sceneVertexShader,
-    const LightList& lights
+    const LightManagerPtr& lightMngr
 )
 {
     auto vertexSnippets = assembleVertexSnippets(sceneVertexShader,
-                                                 buffers, lights);
+                                                 buffers, lightMngr);
     return buildShader(
         assembleFields(vertexSnippets),
         assembleMethods(vertexSnippets),
@@ -71,11 +71,11 @@ std::string ShaderManager::assembleVertexShaderStr(
 
 std::string ShaderManager::assembleFragmentShaderStr(
     const BufferList& buffers, const SnippetPtr& sceneFragmentShader,
-    const LightList& lights
+    const LightManagerPtr& lightMngr
 )
 {
     auto fragmentSnippets = assembleFragmentSnippets(sceneFragmentShader,
-                                                     buffers, lights);
+                                                     buffers, lightMngr);
     return buildShader(
         assembleFields(fragmentSnippets),
         assembleMethods(fragmentSnippets),
@@ -198,18 +198,19 @@ std::string ShaderManager::assembleFragmentShaderStr(
 
 std::vector<SnippetPtr> ShaderManager::assembleVertexSnippets(
     const SnippetPtr& sceneVertexShader, const BufferList& buffers,
-    const LightList& lights
+    const LightManagerPtr& lightMngr
 )
 {
     std::vector<SnippetPtr> vertexSnippets;
-    vertexSnippets.reserve(1 + buffers.size() + lights.size());
+    vertexSnippets.reserve(1 + buffers.size() + lightMngr->getLights().size());
     vertexSnippets.push_back(sceneVertexShader);
 
     for (auto buffer : buffers)
         vertexSnippets.push_back(buffer->getVertexShaderGLSL());
 
-    if (lights.size() > 0) //only need one instance of light code
-        vertexSnippets.push_back(lights[0]->getVertexShaderGLSL());
+    //TODO: light merging
+    //if (lights.size() > 0) //only need one instance of light code
+    //    vertexSnippets.push_back(lights[0]->getVertexShaderGLSL());
 
     return vertexSnippets;
 }
@@ -218,18 +219,19 @@ std::vector<SnippetPtr> ShaderManager::assembleVertexSnippets(
 
 std::vector<SnippetPtr> ShaderManager::assembleFragmentSnippets(
     const SnippetPtr& sceneFragmentShader, const BufferList& buffers,
-    const LightList& lights
+    const LightManagerPtr& lightMngr
 )
 {
     std::vector<SnippetPtr> fragmentSnippets;
-    fragmentSnippets.reserve(1 + buffers.size() + lights.size());
+    fragmentSnippets.reserve(1 + buffers.size() + lightMngr->getLights().size());
     fragmentSnippets.push_back(sceneFragmentShader);
 
     for (auto buffer : buffers)
         fragmentSnippets.push_back(buffer->getFragmentShaderGLSL());
 
-    if (lights.size() > 0) //only need one instance of light code
-        fragmentSnippets.push_back(lights[0]->getFragmentShaderGLSL());
+    //TODO: light merging
+    //if (lights.size() > 0) //only need one instance of light code
+    //    fragmentSnippets.push_back(lights[0]->getFragmentShaderGLSL());
 
     return fragmentSnippets;
 }

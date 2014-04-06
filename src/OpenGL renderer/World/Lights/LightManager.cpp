@@ -24,12 +24,22 @@
 \******************************************************************************/
 
 #include "LightManager.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include <GL/glew.h>
+#include <iostream>
+
+
+LightManager::LightManager()
+{
+    ambientLightUpdated_ = true; //TODO, figure this out
+}
+
 
 
 void LightManager::addLight(const std::shared_ptr<NewLight>& light)
 {
     lights_.push_back(light);
+    std::cout << "Successfully added a Light." << std::endl;
 }
 
 
@@ -41,8 +51,60 @@ LightList LightManager::getLights()
 
 
 
-void LightManager::sync(GLuint handle)
+void LightManager::sync(GLuint handle, GLint ambientLightUniform)
 {
+    if (ambientLightUpdated_)
+        glUniform3fv(ambientLightUniform, 1, glm::value_ptr(ambientLight_));
+
     for (auto light : lights_)
-        sync(handle);
+        light->sync(handle);
+}
+
+
+
+void LightManager::setAmbientLight(const glm::vec3& rgb)
+{
+    ambientLight_ = rgb;
+    ambientLightUpdated_ = true;
+}
+
+
+
+glm::vec3 LightManager::getAmbientLight()
+{
+    return ambientLight_;
+}
+
+
+
+SnippetPtr LightManager::getVertexShaderGLSL()
+{
+    return std::make_shared<ShaderSnippet>(
+        R".(
+            //LightManager fields
+        ).",
+        R".(
+            //LightManager methods
+        ).",
+        R".(
+            //LightManager main method code
+        )."
+    );
+}
+
+
+
+SnippetPtr LightManager::getFragmentShaderGLSL()
+{
+    return std::make_shared<ShaderSnippet>(
+        R".(
+            //LightManager fields
+        ).",
+        R".(
+            //LightManager methods
+        ).",
+        R".(
+            //LightManager main method
+        )."
+    );
 }

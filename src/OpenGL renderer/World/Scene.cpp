@@ -32,9 +32,9 @@
 
 
 Scene::Scene(const std::shared_ptr<Camera>& camera) :
-    camera_(camera), ambientLightUpdated_(true)
+    camera_(camera), lightManager_(std::make_shared<LightManager>())
 {
-    setAmbientLight(glm::vec3(1));
+    lightManager_->setAmbientLight(glm::vec3(1));
 }
 
 
@@ -42,7 +42,7 @@ Scene::Scene(const std::shared_ptr<Camera>& camera) :
 void Scene::addModel(const InstancedModelPtr& model)
 {
     addModel(model, ShaderManager::createProgram(model,
-        getVertexShaderGLSL(), getFragmentShaderGLSL(), lights_));
+        getVertexShaderGLSL(), getFragmentShaderGLSL(), lightManager_));
 }
 
 
@@ -62,26 +62,9 @@ void Scene::addModel(const InstancedModelPtr& model, const ProgramPtr& program)
 
 
 
-void Scene::addLight(const std::shared_ptr<Light>& light)
-{
-    lights_.push_back(light);
-
-    std::cout << "Successfully added a Light to the Scene." << std::endl;
-}
-
-
-
 void Scene::setCamera(const std::shared_ptr<Camera>& sceneCamera)
 {
     camera_ = sceneCamera;
-}
-
-
-
-void Scene::setAmbientLight(const glm::vec3& rgb)
-{
-    ambientLight_ = rgb;
-    ambientLightUpdated_ = true;
 }
 
 
@@ -97,12 +80,11 @@ float Scene::render()
         GLuint handle = renderable.program->getHandle();
         glUseProgram(handle);
         camera_->sync(renderable.viewUniform, renderable.projUniform);
-        syncLighting(handle, renderable.ambientLightUniform);
+        lightManager_->sync(handle, renderable.ambientLightUniform);
 
         renderable.model->render(handle);
     }
     camera_->endSync();
-    doneSyncingLighting();
 
     auto diff = duration_cast<microseconds>(steady_clock::now() - start).count();
     return diff / 1000.0f;
@@ -120,39 +102,6 @@ std::shared_ptr<Camera> Scene::getCamera()
 int Scene::getModelCount()
 {
     return (int)renderables_.size();
-}
-
-
-
-LightList Scene::getLights()
-{
-    return lights_;
-}
-
-
-
-glm::vec3 Scene::getAmbientLight()
-{
-    return ambientLight_;
-}
-
-
-
-void Scene::syncLighting(GLuint programHandle, GLint ambientLightUniform)
-{
-    if (ambientLightUpdated_)
-        glUniform3fv(ambientLightUniform, 1, glm::value_ptr(ambientLight_));
-
-    //todo: Light::sync needs to be optimized like Camera::sync
-    for (std::size_t j = 0; j < lights_.size(); j++)
-        lights_[j]->sync(programHandle, j);
-}
-
-
-
-void Scene::doneSyncingLighting()
-{
-    ambientLightUpdated_ = true;
 }
 
 

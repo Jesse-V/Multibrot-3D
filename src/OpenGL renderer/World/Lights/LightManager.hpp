@@ -40,13 +40,17 @@ class LightManager : public ShaderUtilizer
 
         void addLight(const std::shared_ptr<NewLight>& light);
         LightList getLights();
-        void sync(GLuint handle);
+        void sync(GLuint handle, GLint ambientLightUniform);
+        void setAmbientLight(const glm::vec3& rgb);
+        glm::vec3 getAmbientLight();
 
         virtual SnippetPtr getVertexShaderGLSL();
         virtual SnippetPtr getFragmentShaderGLSL();
 
     private:
         LightList lights_;
+        glm::vec3 ambientLight_;
+        bool ambientLightUpdated_;
 };
 
 

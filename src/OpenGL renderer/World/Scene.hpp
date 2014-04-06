@@ -42,7 +42,7 @@
 **/
 
 #include "Camera.hpp"
-#include "Lights/Light.hpp"
+#include "Lights/LightManager.hpp"
 #include "Modeling/Shading/Program.hpp"
 #include "Modeling/InstancedModel.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -55,15 +55,11 @@ class Scene
         Scene(const std::shared_ptr<Camera>& camera);
         void addModel(const InstancedModelPtr& model);
         void addModel(const InstancedModelPtr& model, const ProgramPtr& program);
-        void addLight(const std::shared_ptr<Light>& light);
         void setCamera(const std::shared_ptr<Camera>& camera);
-        void setAmbientLight(const glm::vec3& rgb);
         float render();
 
         std::shared_ptr<Camera> getCamera();
         int getModelCount();
-        LightList getLights();
-        glm::vec3 getAmbientLight();
 
         virtual SnippetPtr getVertexShaderGLSL();
         virtual SnippetPtr getFragmentShaderGLSL();
@@ -81,15 +77,9 @@ class Scene
         };
 
     private:
-        void syncLighting(GLuint programHandle, GLint ambientLightUniform);
-        void doneSyncingLighting();
-
-    private:
         std::vector<Renderable> renderables_;
-        LightList lights_;
+        std::shared_ptr<LightManager> lightManager_;
         std::shared_ptr<Camera> camera_;
-        glm::vec3 ambientLight_;
-        bool ambientLightUpdated_;
 };
 
 
