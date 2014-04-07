@@ -33,7 +33,7 @@
 class Light : public ShaderUtilizer
 {
     public:
-        void setEmitting(bool emitting);
+        virtual void setEmitting(bool emitting) = 0;
         bool isEmitting() const;
 
         virtual void sync(GLuint handle) = 0;
@@ -41,7 +41,8 @@ class Light : public ShaderUtilizer
         virtual SnippetPtr getVertexShaderGLSL() = 0;
         virtual SnippetPtr getFragmentShaderGLSL() = 0;
 
-    private:
+    protected:
+        void setEmittingInternal(bool emitting);
         bool emitting_;
 };
 

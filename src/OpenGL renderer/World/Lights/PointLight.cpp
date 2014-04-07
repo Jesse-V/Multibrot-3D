@@ -26,7 +26,6 @@
 #include "PointLight.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <sstream>
-#include <iostream>
 
 int PointLight::instanceID_ = 0;
 
@@ -35,10 +34,29 @@ PointLight::PointLight(const glm::vec3& position, const glm::vec3& color,
                     float radius, float power)
 {
     instanceID_++;
-    position_ = std::make_pair(position, VarData("lPosition" + std::to_string(instanceID_)));
-    color_    = std::make_pair(color,    VarData("lColor"    + std::to_string(instanceID_)));
-    radius_   = std::make_pair(radius,   VarData("lRadius"   + std::to_string(instanceID_)));
-    power_    = std::make_pair(power,    VarData("lPower"    + std::to_string(instanceID_)));
+    position_ = std::make_pair(position,
+        Bridge::PairedData("PointLightPosition" + std::to_string(instanceID_)));
+    color_    = std::make_pair(color,
+        Bridge::PairedData("PointLightColor"    + std::to_string(instanceID_)));
+    radius_   = std::make_pair(radius,
+        Bridge::PairedData("PointLightRadius"   + std::to_string(instanceID_)));
+    power_    = std::make_pair(power,
+        Bridge::PairedData("PointLightPower"    + std::to_string(instanceID_)));
+}
+
+
+
+void PointLight::setEmitting(bool emitting)
+{
+    Light::setEmittingInternal(emitting);
+
+    if (emitting)
+        setRadius(backupRadius_);
+    else
+    {
+        backupRadius_ = radius_.first;
+        setRadius(0);
+    }
 }
 
 
@@ -47,28 +65,28 @@ void PointLight::sync(GLuint handle)
 {
     if (position_.second.outOfSync_)
     {
-        auto loc = find(position_.second, handle);
+        auto loc = Bridge::getInstance().query(position_.second, handle);
         glUniform3fv(loc, 1, glm::value_ptr(position_.first));
         position_.second.outOfSync_ = false;
     }
 
     if (color_.second.outOfSync_)
     {
-        auto loc = find(color_.second, handle);
+        auto loc = Bridge::getInstance().query(color_.second, handle);
         glUniform3fv(loc, 1, glm::value_ptr(color_.first));
         color_.second.outOfSync_ = false;
     }
 
     if (radius_.second.outOfSync_)
     {
-        auto loc = find(radius_.second, handle);
+        auto loc = Bridge::getInstance().query(radius_.second, handle);
         glUniform1f(loc, radius_.first);
         radius_.second.outOfSync_ = false;
     }
 
     if (power_.second.outOfSync_)
     {
-        auto loc = find(power_.second, handle);
+        auto loc = Bridge::getInstance().query(power_.second, handle);
         glUniform1f(loc, power_.first);
         power_.second.outOfSync_ = false;
     }
@@ -124,31 +142,6 @@ SnippetPtr PointLight::getFragmentShaderGLSL()
             }
         )."
     );
-}
-
-
-
-GLint PointLight::find(const VarData& varData, GLuint handle)
-{
-    bool found = false;
-    GLint location = (GLint)NULL;
-    for (auto bridge : cache_)
-    {
-        if (bridge.handle_ == handle && bridge.varName_ == varData.name_)
-        {
-            location = bridge.location_;
-            found = true;
-            break;
-        }
-    }
-
-    if (!found)
-    {
-        location = glGetUniformLocation(handle, varData.name_.c_str());
-        cache_.push_back(VarBridge(handle, varData.name_, location));
-    }
-
-    return location;
 }
 
 

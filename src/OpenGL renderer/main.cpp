@@ -315,7 +315,7 @@ int main(int argc, char** argv)
     initializeGlutWindow(
         glutGet(GLUT_SCREEN_WIDTH),
         glutGet(GLUT_SCREEN_HEIGHT),
-        "Multibrot Viewer"
+        "Parallel Programming - Final Project"
     );
 
     try

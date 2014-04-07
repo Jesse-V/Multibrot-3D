@@ -85,19 +85,6 @@ std::string ShaderManager::assembleFragmentShaderStr(
         assembleMainBodyCode(fragmentSnippets) + R".(
             //final fragment shader main body code from ShaderManager
 
-            //flashlight
-            {
-                float r = sqrt(pow(vertexProjectedFrag.x, 2) +
-                    pow(vertexProjectedFrag.y, 2));
-
-                float beamR = 3;
-                if (r < beamR)
-                {
-                    vec3 light = vec3(beamR - r);
-                    colors.lightBlend = max(colors.lightBlend, light);
-                }
-            }
-
             vec3 lighting = ambientLight * colors.lightBlend;
             vec3 color = colors.material * lighting;
             gl_FragColor = vec4(color, 1);

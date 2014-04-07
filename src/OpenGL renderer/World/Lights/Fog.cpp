@@ -33,6 +33,14 @@ Fog::Fog(float minDistance, float maxDistance) :
 
 
 
+void Fog::setEmitting(bool emitting)
+{
+    Light::setEmittingInternal(emitting);
+    //TODO: implement
+}
+
+
+
 void Fog::sync(GLuint handle)
 {}
 

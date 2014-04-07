@@ -28,6 +28,7 @@
 #include "Viewer.hpp"
 #include "World/Lights/Fog.hpp"
 #include "World/Lights/PointLight.hpp"
+#include "World/Lights/RadialGradientLight.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/Image.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedCube.hpp"
 #include "Modeling/DataBuffers/SampledBuffers/TexturedPlane.hpp"
@@ -71,6 +72,9 @@ void Viewer::addLights()
         glm::vec3(60 - 6, 8, 1), pointLightColor, lightR, lightP));
     scene_->getLightManager()->addLight(std::make_shared<PointLight>(
         glm::vec3(8, 60 - 6, 1), pointLightColor, lightR, lightP));
+
+    //flashlight
+    scene_->getLightManager()->addLight(std::make_shared<RadialGradientLight>(3));
 
     //add fog effect
     scene_->getLightManager()->addLight(std::make_shared<Fog>(80, 120));
@@ -264,6 +268,7 @@ std::vector<std::vector<int>> Viewer::readGeometry(const std::string& filename)
 
 void Viewer::addSkybox()
 {
+    /*
     std::cout << "Creating skybox..." << std::endl;
 
     auto image = std::make_shared<Image>(
@@ -277,6 +282,7 @@ void Viewer::addSkybox()
     scene_->addModel(model); //add to Scene and save
 
     std::cout << "... done creating skybox." << std::endl;
+    */
 }
 
 

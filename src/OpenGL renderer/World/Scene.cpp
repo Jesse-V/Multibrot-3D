@@ -127,7 +127,7 @@ SnippetPtr Scene::getVertexShaderGLSL()
             attribute vec3 vertex; //position of the vertex
             uniform mat4 viewMatrix, projMatrix; //Camera & projection matrices
             uniform mat4 modelMatrix; //transforms model into world space
-            varying vec3 vertexWorldFrag, vertexProjectedFrag;
+            varying vec3 vertexWorldFrag, vertexViewedFrag, vertexProjectedFrag;
         ).",
         R".(
             //Scene methods
@@ -140,6 +140,7 @@ SnippetPtr Scene::getVertexShaderGLSL()
 
             gl_Position = vertexProjected;
             vertexWorldFrag = vertexWorld.xyz;
+            vertexViewedFrag = vertexViewed.xyz;
             vertexProjectedFrag = vertexProjected.xyz;
         )."
     );
@@ -155,7 +156,7 @@ SnippetPtr Scene::getFragmentShaderGLSL()
 
             //Scene fields
             uniform vec3 ambientLight;
-            varying vec3 vertexWorldFrag, vertexProjectedFrag;
+            varying vec3 vertexWorldFrag, vertexViewedFrag, vertexProjectedFrag;
 
             struct Colors
             {

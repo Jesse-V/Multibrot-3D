@@ -31,6 +31,8 @@
 class CylinderLight : public Light
 {
     public:
+        virtual void setEmitting(bool emitting); //TODO: implement
+
         virtual SnippetPtr getVertexShaderGLSL();
         virtual SnippetPtr getFragmentShaderGLSL();
 };

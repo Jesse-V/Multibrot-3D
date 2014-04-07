@@ -26,7 +26,7 @@
 #include "Light.hpp"
 
 
-void Light::setEmitting(bool emitting)
+void Light::setEmittingInternal(bool emitting)
 {
     emitting_ = emitting;
 }

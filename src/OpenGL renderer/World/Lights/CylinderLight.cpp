@@ -29,6 +29,14 @@
 //TODO: NOT IMPLEMENTED
 
 
+void CylinderLight::setEmitting(bool emitting)
+{
+    Light::setEmittingInternal(emitting);
+    //TODO: implement
+}
+
+
+
 SnippetPtr CylinderLight::getVertexShaderGLSL()
 {
     return std::make_shared<ShaderSnippet>(

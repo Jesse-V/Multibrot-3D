@@ -86,6 +86,7 @@ add_executable(MultibrotRenderer
     Modeling/InstancedModel.cpp
     Modeling/Mesh/Mesh.cpp
 
+    Modeling/DataBuffers/Bridge.cpp
     Modeling/DataBuffers/VertexBuffer.cpp
     Modeling/DataBuffers/IndexBuffer.cpp
     Modeling/DataBuffers/ColorBuffer.cpp
@@ -97,8 +98,6 @@ add_executable(MultibrotRenderer
     Modeling/Shading/ShaderSnippet.cpp
     Modeling/Shading/Program.cpp
     Modeling/Shading/Shader.cpp
-
-    Trajectory/BoundingBox.cpp
 )
 
 target_link_libraries(MultibrotRenderer glut GLEW GL ${GLEW_LIBRARIES} png pthread)

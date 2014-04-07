@@ -27,12 +27,25 @@
 #define RADIAL_GRADIENT_LIGHT
 
 #include "Light.hpp"
+#include "Modeling/DataBuffers/Bridge.hpp"
 
 class RadialGradientLight : public Light
 {
     public:
+        RadialGradientLight(float radius);
+
+        virtual void setEmitting(bool emitting);
+        virtual void sync(GLuint handle);
+
+        void setRadius(float newRadius);
+        float getRadius() const;
+
         virtual SnippetPtr getVertexShaderGLSL();
         virtual SnippetPtr getFragmentShaderGLSL();
+
+    private:
+        static int instanceID_;
+        std::pair<float, Bridge::PairedData> radius_;
 };
 
 #endif

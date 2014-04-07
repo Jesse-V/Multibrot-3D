@@ -24,9 +24,55 @@
 \******************************************************************************/
 
 #include "RadialGradientLight.hpp"
+#include <sstream>
+
+int RadialGradientLight::instanceID_ = 0;
 
 
-//TODO: NOT IMPLEMENTED
+RadialGradientLight::RadialGradientLight(float radius)
+{
+    instanceID_++;
+    radius_ = std::make_pair(radius,
+        Bridge::PairedData("RGLightRadius" + std::to_string(instanceID_)));
+}
+
+
+
+void RadialGradientLight::setEmitting(bool emitting)
+{
+    Light::setEmittingInternal(emitting);
+    if (emitting)
+        setRadius(3.0f);
+    else
+        setRadius(0.0f);
+}
+
+
+void RadialGradientLight::sync(GLuint handle)
+{
+    if (radius_.second.outOfSync_)
+    {
+        auto loc = Bridge::getInstance().query(radius_.second, handle);
+        glUniform1f(loc, radius_.first);
+        radius_.second.outOfSync_ = false;
+    }
+}
+
+
+
+void RadialGradientLight::setRadius(float newRadius)
+{
+    radius_.first = newRadius;
+    radius_.second.outOfSync_ = true;
+}
+
+
+
+float RadialGradientLight::getRadius() const
+{
+    return radius_.first;
+}
+
 
 
 SnippetPtr RadialGradientLight::getVertexShaderGLSL()
@@ -48,15 +94,30 @@ SnippetPtr RadialGradientLight::getVertexShaderGLSL()
 
 SnippetPtr RadialGradientLight::getFragmentShaderGLSL()
 {
+    const auto r = radius_.second.name_;
+
+    std::stringstream fields("");
+    fields << "uniform float " << r << ";";
+
     return std::make_shared<ShaderSnippet>(
         R".(
             //RadialGradientLight fields
+            )." + fields.str() + R".(
         ).",
         R".(
             //RadialGradientLight methods
         ).",
         R".(
             //RadialGradientLight main method
+            {
+                float beamRadius = )." + r + R".(;
+                float r = length(vertexViewedFrag.xy);
+                if (r < beamRadius)
+                {
+                    vec3 light = vec3(beamRadius - r);
+                    colors.lightBlend = max(colors.lightBlend, light);
+                }
+            }
         )."
     );
 }

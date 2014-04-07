@@ -93,6 +93,10 @@ void User::onKeyPress(unsigned char key)
             downKeys_.insert(KeyAction::DOWN);
             break;
 
+        case 'f':
+            downKeys_.insert(KeyAction::FLASHLIGHT_TOGGLE);
+            break;
+
         case ESCAPE:
             releasePointer();
             break;
@@ -127,6 +131,10 @@ void User::onKeyRelease(unsigned char key)
 
         case 'q':
             downKeys_.erase(KeyAction::DOWN);
+            break;
+
+        case 't':
+            downKeys_.erase(KeyAction::FLASHLIGHT_TOGGLE);
             break;
     }
 }
@@ -230,6 +238,13 @@ void User::update(int deltaTime)
 
     if (downKeys_.empty())
         movementDelta_ *= GEOMETRIC_SPEED_DECAY;
+
+    if (downKeys_.count(KeyAction::FLASHLIGHT_TOGGLE))
+    {
+        auto flashlight = scene_->getLightManager()->getLights()[4];
+        flashlight->setEmitting(!flashlight->isEmitting());
+        downKeys_.erase(KeyAction::FLASHLIGHT_TOGGLE);
+    }
 }
 
 

@@ -33,6 +33,7 @@ class Fog : public Light
     public:
         Fog(float minDistance = 70, float maxDistance = 110);
 
+        virtual void setEmitting(bool emitting); //TODO: implement
         virtual void sync(GLuint handle);
 
         virtual SnippetPtr getVertexShaderGLSL();

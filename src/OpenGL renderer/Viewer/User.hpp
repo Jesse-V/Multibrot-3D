@@ -77,7 +77,8 @@ class User
             FORWARD, BACKWARD,
             RIGHT, LEFT,
             UP, DOWN,
-            POSITIVE_ROLL, NEGATIVE_ROLL
+            POSITIVE_ROLL, NEGATIVE_ROLL,
+            FLASHLIGHT_TOGGLE
         };
 
         struct KeyHash
